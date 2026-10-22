@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="referrer" content="no-referrer">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f2f7">
@@ -23,16 +24,17 @@
   --danger: #d93025;
 }
 
+/* 极致 OLED 纯黑深色模式 */
 [data-theme="dark"] {
-  --bg-color: #202124;
-  --toolbar-bg: #292a2d;
+  --bg-color: #000000;
+  --toolbar-bg: #121212;
   --text-color: #e8eaed;
   --text-muted: #9aa0a6;
-  --border-color: #333639;
+  --border-color: #262626;
   --tint-color: #8ab4f8;
-  --panel-bg: #292a2d;
-  --card-bg: #292a2d;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --panel-bg: #121212;
+  --card-bg: #161616;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   --danger: #f28b82;
 }
 
@@ -44,7 +46,7 @@ body {
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 
-/* 顶部标签页栏（初始有且仅有 1 个标签） */
+/* 顶部标签页栏 */
 #top-tabs-bar {
   display: flex; align-items: center; background: var(--bg-color);
   padding: 6px 8px 0 8px; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--border-color);
@@ -82,7 +84,7 @@ footer {
 footer .icon-btn { flex-direction: column; gap: 2px; font-size: 10px; padding: 4px 6px; flex: 1; color: var(--text-muted); }
 footer .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
-/* 细边框 1px 地址栏 */
+/* 地址栏 */
 .address-bar {
   flex: 1; display: flex; align-items: center; background: var(--bg-color);
   border: 1px solid var(--border-color); border-radius: 18px; padding: 0 10px; height: 34px; position: relative;
@@ -101,6 +103,8 @@ footer .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
 @keyframes loading { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 95%; } }
 
 main { flex: 1; position: relative; background: var(--bg-color); overflow: hidden; }
+
+/* 内嵌 Web 容器 */
 #frames-container { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
 iframe { width: 100%; height: 100%; border: none; background: #fff; display: none; position: absolute; inset: 0; }
 iframe.active { display: block; pointer-events: auto; }
@@ -117,36 +121,29 @@ iframe.active { display: block; pointer-events: auto; }
   margin-bottom: 20px; cursor: pointer; box-shadow: var(--shadow);
 }
 
-.api-dashboard { width: 100%; max-width: 600px; margin-bottom: 20px; }
+.api-dashboard { width: 100%; max-width: 600px; margin-bottom: 12px; }
 .api-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; box-shadow: var(--shadow); }
 .api-card-title { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
 .weather-info { display: flex; align-items: center; gap: 10px; }
 .weather-temp { font-size: 24px; font-weight: 700; color: var(--tint-color); }
 .weather-desc { font-size: 12px; }
 
-/* 细边框结构化搜索结果渲染页 (20条高热度无广告纯净检索，包含视频与攻略) */
-#search-view {
-  position: absolute; inset: 0; z-index: 21; overflow-y: auto; display: none; flex-direction: column; align-items: center; background: var(--bg-color); padding-bottom: 50px;
+/* 主页 Bing 样式大搜索框 */
+.home-google-search {
+  width: 100%; max-width: 600px; display: flex; align-items: center;
+  background: var(--card-bg); border: 1px solid var(--border-color);
+  border-radius: 28px; padding: 0 18px; height: 48px; box-shadow: var(--shadow);
+  margin-bottom: 20px; transition: all 0.2s ease;
 }
-.search-header { position: sticky; top: 0; width: 100%; background: var(--toolbar-bg); z-index: 10; padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; box-shadow: var(--shadow); }
-#search-results-container { padding: 16px; width: 100%; max-width: 600px; }
-.search-result-card { background: var(--card-bg); border: 1px solid var(--border-color); width: 100%; border-radius: 10px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); cursor: pointer; transition: transform 0.1s; position: relative; }
-.search-result-card:active { transform: scale(0.99); }
-.search-result-title { font-size: 15px; font-weight: 600; color: var(--tint-color); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
-.hot-badge { font-size: 10px; background: #ea4335; color: #fff; padding: 1px 5px; border-radius: 4px; font-weight: 500; }
-.video-badge { font-size: 10px; background: #34a853; color: #fff; padding: 1px 5px; border-radius: 4px; font-weight: 500; }
-.search-result-url { font-size: 11px; color: #34c759; margin-bottom: 4px; word-break: break-all; }
-.search-result-snippet { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
-
-/* 超时白屏提示面板 */
-#iframe-timeout-banner {
-  position: absolute; top: 50px; left: 16px; right: 16px; z-index: 999;
-  background: var(--card-bg); border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; display: none;
+.home-google-search:hover, .home-google-search:focus-within {
+  border-color: var(--tint-color);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
 }
-#iframe-timeout-banner p { margin: 0 0 10px 0; font-size: 13px; color: var(--text-color); }
-.banner-actions { display: flex; gap: 8px; justify-content: center; }
-.banner-btn-reload { background: var(--bg-color); color: var(--text-color); border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500; }
-.banner-btn-jump { background: var(--tint-color); color: #fff; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 500; }
+.home-google-search svg { margin-right: 12px; flex-shrink: 0; fill: var(--text-muted); }
+.home-google-search input {
+  flex: 1; border: none; background: transparent; color: var(--text-color);
+  font-size: 15px; outline: none;
+}
 
 /* 面板与设置 */
 .overlay-panel { position: absolute; inset: 0; background: var(--bg-color); z-index: 2000; transform: translateY(100%); display: flex; flex-direction: column; transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); }
@@ -200,25 +197,17 @@ iframe.active { display: block; pointer-events: auto; }
         </div>
       </div>
     </div>
-  </div>
 
-  <div id="search-view">
-    <div class="search-header">
-      <h2 style="margin:0;font-size:14px;color:var(--text-color);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;" id="search-query-title">搜索结果</h2>
-      <button class="icon-btn" onclick="showHome()" style="font-size:11px;padding:3px 8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:6px;" data-i18n="backHome">返回主页</button>
-    </div>
-    <div id="search-results-container"></div>
-  </div>
-
-  <div id="frames-container">
-    <div id="iframe-timeout-banner" style="display:none;">
-      <p id="timeout-msg">网页加载超过 3 秒未响应（可能存在同源或跨域白屏限制），请选择：</p>
-      <div class="banner-actions">
-        <button class="banner-btn-reload" onclick="reloadCurrentIframe()">🔄 再次加载</button>
-        <button class="banner-btn-jump" onclick="openCurrentUrlExternally()">🌐 跳转官网</button>
-      </div>
+    <!-- 主页大搜索框 -->
+    <div class="home-google-search">
+      <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+      </svg>
+      <input type="text" id="home-search-input" placeholder="在全网中搜索..." onkeydown="handleHomeKeyDown(event)" autocomplete="off" data-i18n-placeholder="searchPlaceholder">
     </div>
   </div>
+
+  <div id="frames-container"></div>
 
   <div id="panel-view" class="overlay-panel">
     <div class="panel-header"><span id="panel-title">收藏夹</span><button class="icon-btn" onclick="togglePanel(false)">关闭</button></div>
@@ -229,7 +218,7 @@ iframe.active { display: block; pointer-events: auto; }
     <div class="panel-header"><span data-i18n="settings">设置</span><button class="icon-btn" onclick="toggleSettingsView(false)">完成</button></div>
     <div class="panel-content">
       <div class="setting-group">
-        <div class="setting-item"><span data-i18n="language">语言 / Language</span><select id="lang-select" onchange="applyLanguage(this.value)"><option value="auto">自动（跟随网络）</option><option value="zh">简体中文</option><option value="en">English</option></select></div>
+        <div class="setting-item"><span data-i18n="language">语言 / Language</span><select id="lang-select" onchange="applyLanguage(this.value)"><option value="auto">自动（跟随网络/IP环境）</option><option value="zh">简体中文</option><option value="en">English</option></select></div>
         <div class="setting-item"><span data-i18n="theme">主题</span><select id="theme-select" onchange="setTheme(this.value)"><option value="auto">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></div>
       </div>
       <button class="clear-all-btn" onclick="clearData()" data-i18n="clearData">清除所有数据</button>
@@ -254,8 +243,7 @@ var i18n = {
     networkLocation: "网络环境", locating: "定位中...", networkFail: "获取失败",
     weatherTitle: "📍 本地天气", loading: "加载中", windSpeed: "风速: ", weatherFail: "天气加载失败",
     greetingMorning: "早上好", greetingAfternoon: "下午好", greetingEvening: "晚上好", greetingReady: "，准备探索世界？",
-    ipCopied: "已复制 IP：", searchResultsFor: "深度检索与视频资讯结果 (20条): ", backHome: "返回主页", extracting: "正在智能聚合百科、全网文章及高热度视频平台资讯...",
-    timeoutText: "网页加载超过 3 秒未响应（可能存在同源或跨域白屏限制），请选择：", reloadBtn: "🔄 再次加载", jumpBtn: "🌐 跳转官网", hotTag: "🔥 高热度", videoTag: "▶️ 视频精选"
+    ipCopied: "已复制 IP："
   },
   en: {
     appTitle: "Light Boat", searchPlaceholder: "Search or enter address", bottomSearchPlaceholder: "Search...",
@@ -264,22 +252,34 @@ var i18n = {
     networkLocation: "Network", locating: "Detecting...", networkFail: "Failed",
     weatherTitle: "📍 Local Weather", loading: "Loading", windSpeed: "Wind: ", weatherFail: "Failed to load weather",
     greetingMorning: "Good morning", greetingAfternoon: "Good afternoon", greetingEvening: "Good evening", greetingReady: ", ready to explore?",
-    ipCopied: "IP copied: ", searchResultsFor: "Search & Video Results (20 items): ", backHome: "Home", extracting: "Aggregating structured articles and video content...",
-    timeoutText: "Page load exceeded 3s (blank screen or iframe restriction detected). Choose an action:", reloadBtn: "🔄 Reload", jumpBtn: "🌐 Open Official", hotTag: "🔥 Trending", videoTag: "▶️ Video"
+    ipCopied: "IP copied: "
   }
 };
 
 var currentLangSetting = localStorage.getItem('qz_lang') || 'auto';
-var currentLang = 'zh';
+var currentLang = 'en';
 function t(key) { return i18n[currentLang][key] || key; }
+
+function evaluateAutoLanguage() {
+  if (networkInfo.countryCode) {
+    return ['CN', 'TW', 'HK', 'SG'].indexOf(networkInfo.countryCode) !== -1 ? 'zh' : 'en';
+  }
+  return (navigator.language || 'en').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
+}
 
 function applyLanguage(setting) {
   currentLangSetting = setting;
   localStorage.setItem('qz_lang', setting);
+  
   if (setting === 'auto') {
-    currentLang = (navigator.language || 'zh').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
-  } else { currentLang = setting; }
-  document.getElementById('lang-select').value = setting;
+    currentLang = evaluateAutoLanguage();
+  } else {
+    currentLang = setting;
+  }
+
+  var selectEl = document.getElementById('lang-select');
+  if (selectEl) selectEl.value = setting;
+
   document.querySelectorAll('[data-i18n]').forEach(el => {
     el.textContent = t(el.getAttribute('data-i18n'));
   });
@@ -295,18 +295,15 @@ var systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: 
 
 var tabs = [{ id: 'tab_init', type: 'home', title: '起始页', iframe: null, history: [{type:'home'}], historyIndex: 0 }];
 var activeTabId = 'tab_init';
-var loadTimer = null;
 
 var $urlInput = document.getElementById('url-input');
 var $framesContainer = document.getElementById('frames-container');
 var $homeView = document.getElementById('home-view');
-var $searchView = document.getElementById('search-view');
 var $panelView = document.getElementById('panel-view');
 var $settingsView = document.getElementById('settings-view');
 var $panelTitle = document.getElementById('panel-title');
 var $panelContent = document.getElementById('panel-content');
 var $addressWrap = document.getElementById('address-wrap');
-var $timeoutBanner = document.getElementById('iframe-timeout-banner');
 var $backBtn = document.getElementById('back-btn');
 var $forwardBtn = document.getElementById('forward-btn');
 
@@ -335,10 +332,10 @@ function detectNetworkLocation() {
       networkInfo.countryCode = (d.country_code || '').toUpperCase();
       networkInfo.city = d.city || '';
       networkInfo.ip = d.ip || '';
-      renderNetworkBadge();
       if (currentLangSetting === 'auto') {
-        currentLang = ['CN', 'TW', 'HK', 'SG'].indexOf(networkInfo.countryCode) !== -1 ? 'zh' : 'en';
         applyLanguage('auto');
+      } else {
+        renderNetworkBadge();
       }
     })
     .catch(() => {
@@ -415,28 +412,23 @@ function updateGreeting() {
   document.getElementById('greeting-text').textContent = t(key) + t('greetingReady');
 }
 
+// 核心优化：直接将搜索词包装为 Bing 官方搜索链接，实现“直接把 Bing 放进 iframe”
 function normalizeUrl(input) {
   var q = input.trim(); if (!q) return '';
   if (/^(https?:\/\/)?([\w\-]+\.)+[a-z]{2,}(:\d+)?(\/.*)?$/i.test(q) && !q.includes(' ')) {
     return /^https?:\/\//i.test(q) ? q : 'https://' + q;
   }
-  return 'SEARCH:' + q;
+  return 'https://www.bing.com/search?q=' + encodeURIComponent(q);
 }
 
 function processNavigationInCurrentTab(input, isHistoryAction) {
-  var processed = normalizeUrl(input);
-  if (!processed) return;
+  var processedUrl = normalizeUrl(input);
+  if (!processedUrl) return;
 
   var tab = tabs.find(t => t.id === activeTabId);
   if (!tab) return;
 
-  var stateObj = {};
-  if (processed.startsWith('SEARCH:')) {
-    var keyword = processed.replace('SEARCH:', '');
-    stateObj = { type: 'search', query: keyword, title: keyword };
-  } else {
-    stateObj = { type: 'url', url: processed, title: processed.replace(/^https?:\/\//, '').split('/')[0] };
-  }
+  var stateObj = { type: 'url', url: processedUrl, title: input };
 
   if (!isHistoryAction) {
     tab.history = tab.history.slice(0, tab.historyIndex + 1);
@@ -453,42 +445,20 @@ function applyTabState(tab, state) {
   tab.title = state.title || '起始页';
   
   document.querySelectorAll('iframe').forEach(f => f.classList.remove('active'));
-  $homeView.style.display = 'none';$searchView.style.display = 'none';
-  if ($timeoutBanner)$timeoutBanner.style.display = 'none';
-  if (loadTimer) clearTimeout(loadTimer);
+  $homeView.style.display = 'none';
 
   if (state.type === 'home') {
     $homeView.style.display = 'flex';
     $urlInput.value = '';$addressWrap.classList.remove('loading');
     if (tab.iframe) { tab.iframe.remove(); tab.iframe = null; }
-  } else if (state.type === 'search') {
-    tab.query = state.query;
-    $searchView.style.display = 'flex';$urlInput.value = state.query;
-    if (tab.iframe) { tab.iframe.remove(); tab.iframe = null; }
-    render20MixedSearchResults(state.query);
   } else if (state.type === 'url') {
     tab.url = state.url;
     var iframe = tab.iframe;
     if (!iframe) {
       iframe = document.createElement('iframe');
       iframe.id = 'frame_' + tab.id;
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups');
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals');
       iframe.src = state.url;
-      
-      loadTimer = setTimeout(() => {
-        if ($timeoutBanner) {
-          document.getElementById('timeout-msg').textContent = t('timeoutText');
-          document.querySelector('.banner-btn-reload').textContent = t('reloadBtn');
-          document.querySelector('.banner-btn-jump').textContent = t('jumpBtn');
-          $timeoutBanner.style.display = 'block';
-        }
-      }, 3000);
-
-      iframe.onload = function() {
-        if (loadTimer) clearTimeout(loadTimer);
-        if ($timeoutBanner)$timeoutBanner.style.display = 'none';
-      };
-
       $framesContainer.appendChild(iframe);
       tab.iframe = iframe;
     } else if (iframe.src !== state.url) {
@@ -535,74 +505,6 @@ function updateNavButtons() {
   $backBtn.disabled = (tab.historyIndex <= 0);$forwardBtn.disabled = (tab.historyIndex >= tab.history.length - 1);
 }
 
-function reloadCurrentIframe() {
-  if ($timeoutBanner)$timeoutBanner.style.display = 'none';
-  var tab = tabs.find(t => t.id === activeTabId);
-  if (tab && tab.iframe) {
-    var currentSrc = tab.iframe.src;
-    tab.iframe.src = '';
-    setTimeout(() => { tab.iframe.src = currentSrc; }, 100);
-  }
-}
-
-function openCurrentUrlExternally() {
-  var tab = tabs.find(t => t.id === activeTabId);
-  if (tab && tab.url) {
-    window.open(tab.url, '_blank');
-  }
-}
-
-function render20MixedSearchResults(keyword) {
-  document.getElementById('search-query-title').textContent = t('searchResultsFor') + '"' + keyword + '"';
-  var container = document.getElementById('search-results-container');
-  container.innerHTML = `<p style="text-align:center;color:var(--text-muted);margin-top:30px;">${t('extracting')}</p>`;
-
-  setTimeout(() => {
-    var rawList = [
-      { title: '视频实况: ' + keyword + ' 最新赛季高燃实战与全网热门解说视频', url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(keyword + ' 赛季 实况'), snippet: '精选视频平台上达人发布的最新赛季打法解析、高光时刻与实战演示视频链接。', hot: true, isVideo: true },
-      { title: '百科全书: ' + keyword + ' 的全景定义与核心资料详解', url: 'https://baike.baidu.com/item/' + encodeURIComponent(keyword), snippet: '汇集百科对 ' + keyword + ' 的基础概念、背景故事与全方位图文详解。', hot: true, isVideo: false },
-      { title: '视频攻略: ' + keyword + ' 新版本改动与新手进阶技巧视频', url: 'https://www.bilibili.com/video/search?keyword=' + encodeURIComponent(keyword + ' 攻略'), snippet: '各大视频平台高赞UP主制作的硬核攻略、版本改动分析及新手避坑教学。', hot: true, isVideo: true },
-      { title: '全网搜索精选: ' + keyword + ' 的底层原理与核心要点', url: 'https://www.baidu.com/s?wd=' + encodeURIComponent(keyword), snippet: '通过搜索索引提取的关于 ' + keyword + ' 最基础、最直观的全面解析。', hot: false, isVideo: false },
-      { title: '视频直播回放: ' + keyword + ' 赛事级巅峰对决与精彩剪辑', url: 'https://www.douyu.com/search/?kw=' + encodeURIComponent(keyword), snippet: '汇聚视频与直播平台上的高热度赛事直播片段、战术复盘与职业选手第一视角。', hot: false, isVideo: true },
-      { title: '开源代码库: ' + keyword + ' 的顶级 GitHub 源码与仓库', url: 'https://github.com/search?q=' + encodeURIComponent(keyword), snippet: '精准匹配全球开发者社区中与 ' + keyword + ' 相关的最高星标开源项目与 API 实现说明。', hot: false, isVideo: false },
-      { title: '视频解说评测: ' + keyword + ' 全面性能与体验深度测评', url: 'https://www.ixigua.com/search/' + encodeURIComponent(keyword), snippet: '视频创作者对 ' + keyword + ' 进行的多维度深度测评、横向对比与真实体验分享。', hot: false, isVideo: true },
-      { title: '全网权威资讯: ' + keyword + ' 近期行业头条与最新动态', url: 'https://news.baidu.com/ns?word=' + encodeURIComponent(keyword), snippet: '实时追踪搜索引擎索引的各大主流媒体快讯，掌握 ' + keyword + ' 最新市场风向标。', hot: false, isVideo: false },
-      { title: '视频趣味混剪: ' + keyword + ' 玩家自制高燃卡点与名场面', url: 'https://www.tiktok.com/search?q=' + encodeURIComponent(keyword), snippet: '全网播放量极高的 ' + keyword + ' 创意短视频、趣味混剪与名场面合集。', hot: false, isVideo: true },
-      { title: '极客技术问答: 关于 ' + keyword + ' 的报错排查与解法', url: 'https://stackoverflow.com/search?q=' + encodeURIComponent(keyword), snippet: '汇集全球工程师在知名开发者问答社区中针对 ' + keyword + ' 总结的高分解决方案。', hot: false, isVideo: false },
-      { title: '视频干货教学: ' + keyword + ' 零基础到精通全套保姆级教程', url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(keyword + ' 教学'), snippet: '视频平台上点赞数极高的全套系统化教学与手把手实操演练。', hot: false, isVideo: true },
-      { title: '学术与专业报告: ' + keyword + ' 的深度商业与市场分析', url: 'https://scholar.google.com/scholar?q=' + encodeURIComponent(keyword), snippet: '检索学术与专业搜索引擎获取的高权重研究报告，洞察 ' + keyword + ' 的长远生态。', hot: false, isVideo: false },
-      { title: '视频版本前瞻: ' + keyword + ' 下一赛季更新爆料与抢先看', url: 'https://www.bilibili.com/video/search?keyword=' + encodeURIComponent(keyword + ' 爆料'), snippet: '抢先了解视频平台UP主整理的 ' + keyword + ' 内部测试与新版本爆料内容。', hot: true, isVideo: true },
-      { title: '官方开发者文档: ' + keyword + ' 极速上手与标准语法说明', url: 'https://developer.mozilla.org/search?q=' + encodeURIComponent(keyword), snippet: '提供经过搜索引擎严格排名的官方标准语法、参数说明与快速入门文档。', hot: false, isVideo: false },
-      { title: '视频实战教学: ' + keyword + ' 单人四排极限翻盘局演示', url: 'https://www.ixigua.com/search/' + encodeURIComponent(keyword + ' 翻盘'), snippet: '精彩绝伦的视频实战演练，带您领略 ' + keyword + ' 在极限情况下的操作细节。', hot: false, isVideo: true },
-      { title: '社区真实热评: ' + keyword + ' 优缺点横向对比与替代方案', url: 'https://www.reddit.com/search/?q=' + encodeURIComponent(keyword), snippet: '聚合各大高热度讨论板块中真实用户的客观使用评价与深度横评。', hot: false, isVideo: false },
-      { title: '视频赛事集锦: ' + keyword + ' 官方杯赛高光时刻大盘点', url: 'https://www.youtube.com/results?search_query=' + encodeURIComponent(keyword + ' 赛事'), snippet: '职业赛场上的巅峰对决，不容错过的 ' + keyword + ' 精彩瞬间集锦视频。', hot: false, isVideo: true },
-      { title: '中文技术社区: ' + keyword + ' 本地化踩坑总结与心得', url: 'https://github.com/trending?since=monthly', snippet: '国内高权重技术圈整理的中文实战心得与落地经验。', hot: false, isVideo: false },
-      { title: '视频主播连麦: ' + keyword + ' 大神连麦开黑与趣味整活', url: 'https://www.douyu.com/search/?kw=' + encodeURIComponent(keyword + ' 整活'), snippet: '直播与短视频平台上最具娱乐性的 ' + keyword + ' 联动与整活视频链接。', hot: false, isVideo: true },
-      { title: '未来生态展望: ' + keyword + ' 技术变革与长远演进路线', url: 'https://baike.baidu.com/search/word?word=' + encodeURIComponent(keyword), snippet: '前瞻性探讨 ' + keyword + ' 在未来行业变革中所扮演的关键角色。', hot: true, isVideo: false }
-    ];
-
-    var seen = new Set();
-    var uniqueList = rawList.filter(item => {
-      var key = item.url + '|' + item.title;
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-
-    container.innerHTML = '';
-    uniqueList.forEach(item => {
-      var card = document.createElement('div');
-      card.className = 'search-result-card';
-      var badgeHtml = item.isVideo ? `<span class="video-badge">${t('videoTag')}</span>` : (item.hot ? `<span class="hot-badge">${t('hotTag')}</span>` : '');
-      card.innerHTML = `<div class="search-result-title"><span>${item.title}</span>${badgeHtml}</div><div class="search-result-url">${item.url}</div><div class="search-result-snippet">${item.snippet}</div>`;
-      card.onclick = () => {
-        processNavigationInCurrentTab(item.url, false);
-      };
-      container.appendChild(card);
-    });
-  }, 250);
-}
-
 function createNewTab() {
   var id = 'tab_' + Date.now();
   tabs.push({ id: id, type: 'home', title: '起始页', iframe: null, history: [{type:'home'}], historyIndex: 0 });
@@ -633,10 +535,17 @@ function renderTopTabs() {
 }
 
 function handleKeyDown(e) { if (e.key === 'Enter') { processNavigationInCurrentTab(e.target.value, false); e.target.blur(); } }
+function handleHomeKeyDown(e) { if (e.key === 'Enter') { processNavigationInCurrentTab(e.target.value, false); e.target.value = ''; e.target.blur(); } }
 function handleBottomKeyDown(e) { if (e.key === 'Enter') { processNavigationInCurrentTab(e.target.value, false); e.target.value = ''; e.target.blur(); } }
 
 function showHome() {
-  processNavigationInCurrentTab('https://home.internal', false);
+  var tab = tabs.find(t => t.id === activeTabId);
+  if (tab) {
+    tab.history = [{type:'home'}];
+    tab.historyIndex = 0;
+    applyTabState(tab, {type:'home'});
+    updateNavButtons();
+  }
 }
 
 function toggleSettingsView(show) { $settingsView.classList.toggle('show', show); }
