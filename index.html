@@ -6,28 +6,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="referrer" content="no-referrer">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="轻舟">
 <meta name="theme-color" content="#f2f2f7">
 <title>轻舟</title>
-<!-- 极简折纸箭头图标（作为 Chrome/Edge 的兜底） -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233b7df0'/%3E%3Cpath d='M32 12 L48 37 L36 51 L36 39 L15 39 Z' fill='%23ffffff'/%3E%3C/svg%3E">
 
-<!-- iOS 专用图标修复：在 head 中同步绘制不透明的 PNG，确保苹果系统能抓取到 -->
 <script>
+// 在 head 中同步绘制不透明的 PNG 图标，确保苹果系统能完美抓取
 (function() {
-  function generateAppleIcon(size) {
-    try {
+  try {
+    function generateIcon(size) {
       var canvas = document.createElement('canvas');
       canvas.width = canvas.height = size;
       var ctx = canvas.getContext('2d');
       var s = size / 64;
-      
-      // 必须是不透明的纯色背景
       ctx.fillStyle = '#3b7df0';
       ctx.fillRect(0, 0, size, size);
-      
-      // 绘制白色折纸箭头
       ctx.fillStyle = '#ffffff';
       ctx.beginPath();
       ctx.moveTo(32 * s, 12 * s);
@@ -37,39 +32,18 @@
       ctx.lineTo(15 * s, 39 * s);
       ctx.closePath();
       ctx.fill();
-      
       return canvas.toDataURL('image/png');
-    } catch (e) {
-      return '';
     }
-  }
-
-  // 生成苹果最需要的 180x180 规格
-  var png180 = generateAppleIcon(180);
-  var png192 = generateAppleIcon(192);
-  var png512 = generateAppleIcon(512);
-  
-  if (png180) {
-    var link = document.createElement('link');
-    link.rel = 'apple-touch-icon';
-    link.setAttribute('sizes', '180x180');
-    link.href = png180;
-    document.head.appendChild(link);
-  }
-  if (png192) {
-    var link192 = document.createElement('link');
-    link192.rel = 'apple-touch-icon';
-    link192.setAttribute('sizes', '192x192');
-    link192.href = png192;
-    document.head.appendChild(link192);
-  }
-  if (png512) {
-    var link512 = document.createElement('link');
-    link512.rel = 'apple-touch-icon';
-    link512.setAttribute('sizes', '512x512');
-    link512.href = png512;
-    document.head.appendChild(link512);
-  }
+    var sizes = [180, 192, 512];
+    sizes.forEach(function(sz) {
+      var url = generateIcon(sz);
+      var link = document.createElement('link');
+      link.rel = 'apple-touch-icon';
+      link.setAttribute('sizes', sz + 'x' + sz);
+      link.href = url;
+      document.head.appendChild(link);
+    });
+  } catch(e) {}
 })();
 </script>
 
@@ -108,10 +82,12 @@ body {
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 
-/* 顶部标签页栏 */
+/* 顶部标签页栏 - 适配 PWA 刘海安全区 */
 #top-tabs-bar {
   display: flex; align-items: center; background: var(--bg-color);
-  padding: 6px 8px 0 8px; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--border-color);
+  /* 关键：添加 safe-area-inset-top 防止被时间、电量遮挡 */
+  padding: calc(env(safe-area-inset-top) + 6px) 8px 0 8px; 
+  gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--border-color);
   z-index: 1001; scrollbar-width: none;
 }
 #top-tabs-bar::-webkit-scrollbar { display: none; }
@@ -244,16 +220,6 @@ iframe.active { display: block; pointer-events: auto; }
 </head>
 <body>
 
-<!-- 内置极简图标 -->
-<svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
-  <defs>
-    <symbol id="qzLogo" viewBox="0 0 64 64">
-      <rect width="64" height="64" rx="14" fill="#3b7df0"></rect>
-      <path d="M32 12 L48 37 L36 51 L36 39 L15 39 Z" fill="#ffffff"></path>
-    </symbol>
-  </defs>
-</svg>
-
 <div id="top-tabs-bar">
   <div id="tabs-container" style="display:flex; gap:4px; flex:1; overflow-x:auto; scrollbar-width:none;"></div>
   <button class="new-tab-btn" onclick="createNewTab()" title="新标签页">+</button>
@@ -274,12 +240,15 @@ iframe.active { display: block; pointer-events: auto; }
 <main>
   <div id="home-view">
     <div class="brand-logo-wrap">
-      <svg class="brand-logo" aria-hidden="true"><use href="#qzLogo"></use></svg>
+      <!-- 直接内联 SVG，防止 PWA 下 use 标签加载失败 -->
+      <svg class="brand-logo" viewBox="0 0 64 64">
+        <rect width="64" height="64" rx="14" fill="#3b7df0"></rect>
+        <path d="M32 12 L48 37 L36 51 L36 39 L15 39 Z" fill="#ffffff"></path>
+      </svg>
     </div>
     <div class="greeting" id="greeting-text">下午好</div>
     <div class="network-badge" id="network-badge" onclick="copyIP()"><span>🌐</span><span id="network-location" data-i18n="locating">定位中...</span></div>
 
-    <!-- 大搜索框 -->
     <div class="home-google-search">
       <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
         <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
@@ -316,7 +285,7 @@ iframe.active { display: block; pointer-events: auto; }
         <div class="setting-item"><span data-i18n="theme">主题</span><select id="theme-select" onchange="setTheme(this.value)"><option value="auto">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></div>
       </div>
       <button class="clear-all-btn" onclick="clearData()" data-i18n="clearData">清除所有数据</button>
-      <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;">轻舟 v1.5</div>
+      <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;">轻舟 v1.6</div>
     </div>
   </div>
 </main>
@@ -368,12 +337,14 @@ try { themeSetting = localStorage.getItem('qz_theme') || 'auto'; } catch (e) {}
 var systemDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
 function applyThemeToDOM() {
-  var actual = themeSetting === 'auto' ? (systemDark ? 'dark' : 'light') : themeSetting;
-  document.documentElement.setAttribute('data-theme', actual);
-  var sel = document.getElementById('theme-select');
-  if (sel) sel.value = themeSetting;
-  var meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute('content', actual === 'dark' ? '#000000' : '#f2f2f7');
+  try {
+    var actual = themeSetting === 'auto' ? (systemDark ? 'dark' : 'light') : themeSetting;
+    document.documentElement.setAttribute('data-theme', actual);
+    var sel = document.getElementById('theme-select');
+    if (sel) sel.value = themeSetting;
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', actual === 'dark' ? '#000000' : '#f2f2f7');
+  } catch (e) {}
 }
 function setTheme(val) {
   themeSetting = val;
@@ -462,10 +433,8 @@ function firstSuccess(promises) {
   });
 }
 
-function srcIpwho() { return fetchJSON('https://ipwho.is/', 4500).then(function(d) { if (!d || d.success === false || !d.ip) throw new Error('ipwho'); return { ip: d.ip, country: d.country || '', countryCode: (d.country_code || '').toUpperCase(), city: d.city || '', lat: typeof d.latitude === 'number' ? d.latitude : null, lon: typeof d.longitude === 'number' ? d.longitude : null }; }); }
-function srcIpapi() { return fetchJSON('https://ipapi.co/json/', 4500).then(function(d) { if (!d || d.error || !d.ip) throw new Error('ipapi'); return { ip: d.ip, country: d.country_name || '', countryCode: (d.country_code || '').toUpperCase(), city: d.city || '', lat: typeof d.latitude === 'number' ? d.latitude : null, lon: typeof d.longitude === 'number' ? d.longitude : null }; }); }
-function srcIpinfo() { return fetchJSON('https://ipinfo.io/json', 4500).then(function(d) { if (!d || !d.ip) throw new Error('ipinfo'); var loc = (d.loc || '').split(','); return { ip: d.ip, country: '', countryCode: (d.country || '').toUpperCase(), city: d.city || '', lat: loc[0] ? Number(loc[0]) : null, lon: loc[1] ? Number(loc[1]) : null }; }); }
-function srcIpify() { return fetchJSON('https://api.ipify.org?format=json', 4000).then(function(d) { if (!d || !d.ip) throw new Error('ipify'); var tzc = getTimezoneCountry(); return { ip: d.ip, country: '', countryCode: tzc.code || '', city: '', lat: null, lon: null }; }); }
+function srcIpwho() { return fetchJSON('https://ipwho.is/', 4000).then(function(d) { if (!d || d.success === false || !d.ip) throw new Error('ipwho'); return { ip: d.ip, country: d.country || '', countryCode: (d.country_code || '').toUpperCase(), city: d.city || '', lat: typeof d.latitude === 'number' ? d.latitude : null, lon: typeof d.longitude === 'number' ? d.longitude : null }; }); }
+function srcIpapi() { return fetchJSON('https://ipapi.co/json/', 4000).then(function(d) { if (!d || d.error || !d.ip) throw new Error('ipapi'); return { ip: d.ip, country: d.country_name || '', countryCode: (d.country_code || '').toUpperCase(), city: d.city || '', lat: typeof d.latitude === 'number' ? d.latitude : null, lon: typeof d.longitude === 'number' ? d.longitude : null }; }); }
 
 function detectNetworkLocation() {
   if (netPromise) return netPromise;
@@ -473,7 +442,6 @@ function detectNetworkLocation() {
   var loc = document.getElementById('network-location');
   if (loc && !networkInfo.ip) loc.textContent = t('locating');
   netPromise = firstSuccess([srcIpwho(), srcIpapi()])
-    .catch(function () { return firstSuccess([srcIpinfo(), srcIpify()]); })
     .then(function (info) {
       if (info.ip) networkInfo.ip = info.ip;
       if (info.country) networkInfo.country = info.country;
@@ -602,7 +570,7 @@ function initWeather() {
         navigator.permissions.query({ name: 'geolocation' }).then(function (p) { if (p.state === 'granted') tryPreciseLocation(); }).catch(function () {});
       }
     }, 2500);
-  });
+  }).catch(function() {});
 }
 
 /* ==================== 标签页与导航 ==================== */
@@ -686,6 +654,7 @@ function applyTabState(tab, state) {
     if (!iframe) {
       iframe = document.createElement('iframe');
       iframe.id = 'frame_' + tab.id;
+      // PWA 下保持最基础的 sandbox，防止引发内核安全拦截
       iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals');
       iframe.src = state.url;
       $framesContainer.appendChild(iframe);
@@ -770,7 +739,7 @@ function normalizeUrl(input) {
   if (/^(https?:\/\/)?([\w\-]+\.)+[a-z]{2,}(:\d+)?(\/.*)?$/i.test(q) && q.indexOf(' ') === -1) {
     return /^https?:\/\//i.test(q) ? q : 'https://' + q;
   }
-  // 恢复国外 Bing
+  // 使用国外版 Bing
   return 'https://www.bing.com/search?q=' + encodeURIComponent(q);
 }
 
@@ -842,14 +811,17 @@ function initRefreshPolicy() {
   });
 }
 
-/* ==================== 启动 ==================== */
-applyThemeToDOM();
-applyLanguage(currentLangSetting);
-renderTopTabs();
-switchTab('tab_init');
-updateNavButtons();
-initWeather();
-initRefreshPolicy();
+/* ==================== 安全启动 ==================== */
+function safeInit() {
+  try { applyThemeToDOM(); } catch (e) {}
+  try { applyLanguage(currentLangSetting); } catch (e) {}
+  try { renderTopTabs(); } catch (e) {}
+  try { switchTab('tab_init'); } catch (e) {}
+  try { updateNavButtons(); } catch (e) {}
+  try { initWeather(); } catch (e) {}
+  try { initRefreshPolicy(); } catch (e) {}
+}
+safeInit();
 </script>
 </body>
 </html>
