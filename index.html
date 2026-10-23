@@ -10,8 +10,69 @@
 <meta name="apple-mobile-web-app-title" content="轻舟">
 <meta name="theme-color" content="#f2f2f7">
 <title>轻舟</title>
-<!-- 静态 SVG 标签页图标（基于参考图还原） -->
+<!-- 极简折纸箭头图标（作为 Chrome/Edge 的兜底） -->
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233b7df0'/%3E%3Cpath d='M32 12 L48 37 L36 51 L36 39 L15 39 Z' fill='%23ffffff'/%3E%3C/svg%3E">
+
+<!-- iOS 专用图标修复：在 head 中同步绘制不透明的 PNG，确保苹果系统能抓取到 -->
+<script>
+(function() {
+  function generateAppleIcon(size) {
+    try {
+      var canvas = document.createElement('canvas');
+      canvas.width = canvas.height = size;
+      var ctx = canvas.getContext('2d');
+      var s = size / 64;
+      
+      // 必须是不透明的纯色背景
+      ctx.fillStyle = '#3b7df0';
+      ctx.fillRect(0, 0, size, size);
+      
+      // 绘制白色折纸箭头
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.moveTo(32 * s, 12 * s);
+      ctx.lineTo(48 * s, 37 * s);
+      ctx.lineTo(36 * s, 51 * s);
+      ctx.lineTo(36 * s, 39 * s);
+      ctx.lineTo(15 * s, 39 * s);
+      ctx.closePath();
+      ctx.fill();
+      
+      return canvas.toDataURL('image/png');
+    } catch (e) {
+      return '';
+    }
+  }
+
+  // 生成苹果最需要的 180x180 规格
+  var png180 = generateAppleIcon(180);
+  var png192 = generateAppleIcon(192);
+  var png512 = generateAppleIcon(512);
+  
+  if (png180) {
+    var link = document.createElement('link');
+    link.rel = 'apple-touch-icon';
+    link.setAttribute('sizes', '180x180');
+    link.href = png180;
+    document.head.appendChild(link);
+  }
+  if (png192) {
+    var link192 = document.createElement('link');
+    link192.rel = 'apple-touch-icon';
+    link192.setAttribute('sizes', '192x192');
+    link192.href = png192;
+    document.head.appendChild(link192);
+  }
+  if (png512) {
+    var link512 = document.createElement('link');
+    link512.rel = 'apple-touch-icon';
+    link512.setAttribute('sizes', '512x512');
+    link512.href = png512;
+    document.head.appendChild(link512);
+  }
+})();
+</script>
+
 <style>
 :root {
   --bg-color: #f8f9fa;
@@ -47,7 +108,7 @@ body {
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
 
-/* 顶部标签页栏 (已移除图标) */
+/* 顶部标签页栏 */
 #top-tabs-bar {
   display: flex; align-items: center; background: var(--bg-color);
   padding: 6px 8px 0 8px; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--border-color);
@@ -183,13 +244,11 @@ iframe.active { display: block; pointer-events: auto; }
 </head>
 <body>
 
-<!-- 内置极简图标（完全依据您提供的图片形状重绘） -->
+<!-- 内置极简图标 -->
 <svg width="0" height="0" style="position:absolute;overflow:hidden" aria-hidden="true" focusable="false">
   <defs>
     <symbol id="qzLogo" viewBox="0 0 64 64">
-      <!-- 背景色取自图片：亮蓝色 -->
       <rect width="64" height="64" rx="14" fill="#3b7df0"></rect>
-      <!-- 白色折纸箭头形状 -->
       <path d="M32 12 L48 37 L36 51 L36 39 L15 39 Z" fill="#ffffff"></path>
     </symbol>
   </defs>
@@ -257,7 +316,7 @@ iframe.active { display: block; pointer-events: auto; }
         <div class="setting-item"><span data-i18n="theme">主题</span><select id="theme-select" onchange="setTheme(this.value)"><option value="auto">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></div>
       </div>
       <button class="clear-all-btn" onclick="clearData()" data-i18n="clearData">清除所有数据</button>
-      <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;">轻舟 v1.3</div>
+      <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;">轻舟 v1.5</div>
     </div>
   </div>
 </main>
@@ -271,65 +330,6 @@ iframe.active { display: block; pointer-events: auto; }
 
 <script>
 "use strict";
-
-/* ==================== 图标生成（Canvas 渲染确保主屏幕能完美显示） ==================== */
-function renderIconPNG(size) {
-  try {
-    var c = document.createElement('canvas');
-    c.width = c.height = size;
-    var ctx = c.getContext('2d');
-    if (!ctx) return '';
-    var s = size / 64;
-    
-    // 满铺背景，iOS 会自动裁圆角
-    ctx.fillStyle = '#3b7df0';
-    ctx.fillRect(0, 0, size, size);
-    
-    // 绘制白色折纸箭头
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.moveTo(32 * s, 12 * s);
-    ctx.lineTo(48 * s, 37 * s);
-    ctx.lineTo(36 * s, 51 * s);
-    ctx.lineTo(36 * s, 39 * s);
-    ctx.lineTo(15 * s, 39 * s);
-    ctx.closePath();
-    ctx.fill();
-    
-    return c.toDataURL('image/png');
-  } catch (e) {
-    return '';
-  }
-}
-
-function upsertIconLink(rel, type, href, sizes) {
-  var key = rel + '|' + (sizes || '');
-  var old = document.querySelectorAll('link[data-qz-icon="' + key + '"]');
-  for (var i = 0; i < old.length; i++) {
-    if (old[i].parentNode) old[i].parentNode.removeChild(old[i]);
-  }
-  if (!href) return;
-  var link = document.createElement('link');
-  link.rel = rel;
-  if (type) link.type = type;
-  link.href = href;
-  if (sizes) link.sizes = sizes;
-  link.setAttribute('data-qz-icon', key);
-  document.head.appendChild(link);
-}
-
-function setupIcons() {
-  var png32 = renderIconPNG(32);
-  var png180 = renderIconPNG(180);
-  var png192 = renderIconPNG(192);
-  var png512 = renderIconPNG(512);
-  
-  if (png32) upsertIconLink('icon', 'image/png', png32, '32x32');
-  if (png192) upsertIconLink('icon', 'image/png', png192, '192x192');
-  if (png180) upsertIconLink('apple-touch-icon', 'image/png', png180, '180x180');
-  if (png512) upsertIconLink('apple-touch-icon', 'image/png', png512, '512x512');
-}
-setupIcons();
 
 /* ==================== i18n ==================== */
 var i18n = {
@@ -381,9 +381,7 @@ function setTheme(val) {
   applyThemeToDOM();
 }
 function toggleTheme() {
-  themeSetting = themeSetting === 'auto'
-    ? (systemDark ? 'light' : 'dark')
-    : (themeSetting === 'light' ? 'dark' : 'light');
+  themeSetting = themeSetting === 'auto' ? (systemDark ? 'light' : 'dark') : (themeSetting === 'light' ? 'dark' : 'light');
   setTheme(themeSetting);
 }
 if (window.matchMedia) {
@@ -401,17 +399,8 @@ var networkInfo = { country: '', countryCode: '', city: '', ip: '', lat: null, l
 var netPromise = null;
 var netDone = false;
 
-var countryZhMap = {
-  CN: '中国', US: '美国', JP: '日本', KR: '韩国', GB: '英国', FR: '法国', DE: '德国',
-  SG: '新加坡', HK: '中国香港', TW: '中国台湾', MO: '中国澳门', CA: '加拿大',
-  AU: '澳大利亚', IN: '印度', RU: '俄罗斯', BR: '巴西', NL: '荷兰', ES: '西班牙',
-  IT: '意大利', TH: '泰国', MY: '马来西亚', VN: '越南', ID: '印度尼西亚', PH: '菲律宾'
-};
-var countryEnMap = {
-  CN: 'China', US: 'United States', JP: 'Japan', KR: 'South Korea', GB: 'United Kingdom',
-  FR: 'France', DE: 'Germany', SG: 'Singapore', HK: 'Hong Kong', TW: 'Taiwan',
-  MO: 'Macau', CA: 'Canada', AU: 'Australia', IN: 'India', RU: 'Russia', BR: 'Brazil'
-};
+var countryZhMap = { CN: '中国', US: '美国', JP: '日本', KR: '韩国', GB: '英国', FR: '法国', DE: '德国', SG: '新加坡', HK: '中国香港', TW: '中国台湾', MO: '中国澳门', CA: '加拿大', AU: '澳大利亚', IN: '印度', RU: '俄罗斯', BR: '巴西', NL: '荷兰', ES: '西班牙', IT: '意大利', TH: '泰国', MY: '马来西亚', VN: '越南', ID: '印度尼西亚', PH: '菲律宾' };
+var countryEnMap = { CN: 'China', US: 'United States', JP: 'Japan', KR: 'South Korea', GB: 'United Kingdom', FR: 'France', DE: 'Germany', SG: 'Singapore', HK: 'Hong Kong', TW: 'Taiwan', MO: 'Macau', CA: 'Canada', AU: 'Australia', IN: 'India', RU: 'Russia', BR: 'Brazil' };
 
 var tzCountryMap = {
   'Asia/Shanghai': 'CN', 'Asia/Chongqing': 'CN', 'Asia/Urumqi': 'CN', 'Asia/Harbin': 'CN',
@@ -421,10 +410,9 @@ var tzCountryMap = {
   'Europe/London': 'GB', 'Europe/Paris': 'FR', 'Europe/Berlin': 'DE', 'Europe/Moscow': 'RU',
   'Europe/Amsterdam': 'NL', 'Europe/Madrid': 'ES', 'Europe/Rome': 'IT',
   'America/New_York': 'US', 'America/Chicago': 'US', 'America/Denver': 'US',
-  'America/Los_Angeles': 'US', 'America/Phoenix': 'US',
-  'America/Toronto': 'CA', 'America/Vancouver': 'CA',
-  'Australia/Sydney': 'AU', 'Australia/Melbourne': 'AU', 'Pacific/Auckland': 'NZ',
-  'America/Sao_Paulo': 'BR'
+  'America/Los_Angeles': 'US', 'America/Phoenix': 'US', 'America/Toronto': 'CA',
+  'America/Vancouver': 'CA', 'Australia/Sydney': 'AU', 'Australia/Melbourne': 'AU',
+  'Pacific/Auckland': 'NZ', 'America/Sao_Paulo': 'BR'
 };
 
 function getTimezoneCountry() {
@@ -437,20 +425,14 @@ function getTimezoneCountry() {
 }
 
 function getCountryName() {
-  if (currentLang === 'zh') {
-    return countryZhMap[networkInfo.countryCode] || networkInfo.country || networkInfo.countryCode || '';
-  }
+  if (currentLang === 'zh') return countryZhMap[networkInfo.countryCode] || networkInfo.country || networkInfo.countryCode || '';
   return countryEnMap[networkInfo.countryCode] || networkInfo.country || networkInfo.countryCode || '';
 }
 
 function evaluateAutoLanguage() {
-  if (networkInfo.countryCode) {
-    return ['CN', 'TW', 'HK', 'SG', 'MO'].indexOf(networkInfo.countryCode) !== -1 ? 'zh' : 'en';
-  }
+  if (networkInfo.countryCode) return ['CN', 'TW', 'HK', 'SG', 'MO'].indexOf(networkInfo.countryCode) !== -1 ? 'zh' : 'en';
   var tzc = getTimezoneCountry();
-  if (tzc.code) {
-    return ['CN', 'TW', 'HK', 'SG', 'MO'].indexOf(tzc.code) !== -1 ? 'zh' : 'en';
-  }
+  if (tzc.code) return ['CN', 'TW', 'HK', 'SG', 'MO'].indexOf(tzc.code) !== -1 ? 'zh' : 'en';
   return (navigator.language || 'en').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
 }
 
@@ -467,9 +449,8 @@ function fetchJSON(url, ms) {
 
 function firstSuccess(promises) {
   return new Promise(function (resolve, reject) {
-    var pending = promises.length;
-    var settled = false;
-    if (!pending) { reject(new Error('no sources')); return; }
+    var pending = promises.length, settled = false;
+    if (!pending) return reject(new Error('no sources'));
     promises.forEach(function (p) {
       Promise.resolve(p).then(function (v) {
         if (!settled) { settled = true; resolve(v); }
@@ -481,54 +462,16 @@ function firstSuccess(promises) {
   });
 }
 
-function srcIpwho() {
-  return fetchJSON('https://ipwho.is/', 4500).then(function (d) {
-    if (!d || d.success === false || !d.ip) throw new Error('ipwho');
-    return {
-      ip: d.ip, country: d.country || '', countryCode: (d.country_code || '').toUpperCase(),
-      city: d.city || '', lat: typeof d.latitude === 'number' ? d.latitude : null,
-      lon: typeof d.longitude === 'number' ? d.longitude : null
-    };
-  });
-}
-
-function srcIpapi() {
-  return fetchJSON('https://ipapi.co/json/', 4500).then(function (d) {
-    if (!d || d.error || !d.ip) throw new Error('ipapi');
-    return {
-      ip: d.ip, country: d.country_name || '', countryCode: (d.country_code || '').toUpperCase(),
-      city: d.city || '', lat: typeof d.latitude === 'number' ? d.latitude : null,
-      lon: typeof d.longitude === 'number' ? d.longitude : null
-    };
-  });
-}
-
-function srcIpinfo() {
-  return fetchJSON('https://ipinfo.io/json', 4500).then(function (d) {
-    if (!d || !d.ip) throw new Error('ipinfo');
-    var loc = (d.loc || '').split(',');
-    return {
-      ip: d.ip, country: '', countryCode: (d.country || '').toUpperCase(),
-      city: d.city || '', lat: loc[0] ? Number(loc[0]) : null, lon: loc[1] ? Number(loc[1]) : null
-    };
-  });
-}
-
-function srcIpify() {
-  return fetchJSON('https://api.ipify.org?format=json', 4000).then(function (d) {
-    if (!d || !d.ip) throw new Error('ipify');
-    var tzc = getTimezoneCountry();
-    return { ip: d.ip, country: '', countryCode: tzc.code || '', city: '', lat: null, lon: null };
-  });
-}
+function srcIpwho() { return fetchJSON('https://ipwho.is/', 4500).then(function(d) { if (!d || d.success === false || !d.ip) throw new Error('ipwho'); return { ip: d.ip, country: d.country || '', countryCode: (d.country_code || '').toUpperCase(), city: d.city || '', lat: typeof d.latitude === 'number' ? d.latitude : null, lon: typeof d.longitude === 'number' ? d.longitude : null }; }); }
+function srcIpapi() { return fetchJSON('https://ipapi.co/json/', 4500).then(function(d) { if (!d || d.error || !d.ip) throw new Error('ipapi'); return { ip: d.ip, country: d.country_name || '', countryCode: (d.country_code || '').toUpperCase(), city: d.city || '', lat: typeof d.latitude === 'number' ? d.latitude : null, lon: typeof d.longitude === 'number' ? d.longitude : null }; }); }
+function srcIpinfo() { return fetchJSON('https://ipinfo.io/json', 4500).then(function(d) { if (!d || !d.ip) throw new Error('ipinfo'); var loc = (d.loc || '').split(','); return { ip: d.ip, country: '', countryCode: (d.country || '').toUpperCase(), city: d.city || '', lat: loc[0] ? Number(loc[0]) : null, lon: loc[1] ? Number(loc[1]) : null }; }); }
+function srcIpify() { return fetchJSON('https://api.ipify.org?format=json', 4000).then(function(d) { if (!d || !d.ip) throw new Error('ipify'); var tzc = getTimezoneCountry(); return { ip: d.ip, country: '', countryCode: tzc.code || '', city: '', lat: null, lon: null }; }); }
 
 function detectNetworkLocation() {
   if (netPromise) return netPromise;
   if (netDone && networkInfo.ip) { renderNetworkBadge(); return Promise.resolve(networkInfo); }
-
   var loc = document.getElementById('network-location');
   if (loc && !networkInfo.ip) loc.textContent = t('locating');
-
   netPromise = firstSuccess([srcIpwho(), srcIpapi()])
     .catch(function () { return firstSuccess([srcIpinfo(), srcIpify()]); })
     .then(function (info) {
@@ -553,16 +496,13 @@ function detectNetworkLocation() {
       return networkInfo;
     })
     .finally(function () { netPromise = null; });
-
   return netPromise;
 }
 
 function renderNetworkBadge() {
   var loc = document.getElementById('network-location');
   if (!loc) return;
-  var country = getCountryName();
-  var city = networkInfo.city || '';
-  var ip = networkInfo.ip || '';
+  var country = getCountryName(), city = networkInfo.city || '', ip = networkInfo.ip || '';
   if (!country && !city && !ip) {
     loc.textContent = t('networkLocation') + (currentLang === 'zh' ? '：' : ': ') + t('locating');
     return;
@@ -571,8 +511,7 @@ function renderNetworkBadge() {
   if (country) parts.push(country);
   if (city) parts.push(city);
   if (ip) parts.push(ip);
-  loc.textContent = t('networkLocation') + (currentLang === 'zh' ? '：' : ': ') +
-    parts.join(currentLang === 'zh' ? ' · ' : ', ');
+  loc.textContent = t('networkLocation') + (currentLang === 'zh' ? '：' : ': ') + parts.join(currentLang === 'zh' ? ' · ' : ', ');
 }
 
 function copyIP() {
@@ -585,27 +524,18 @@ function copyIP() {
   };
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(networkInfo.ip).then(done).catch(done);
-  } else {
-    done();
-  }
+  } else { done(); }
 }
 
 /* ==================== 语言 ==================== */
 function applyLanguage(setting) {
   currentLangSetting = setting;
   try { localStorage.setItem('qz_lang', setting); } catch (e) {}
-
   currentLang = (setting === 'auto') ? evaluateAutoLanguage() : setting;
-
   var selectEl = document.getElementById('lang-select');
   if (selectEl) selectEl.value = setting;
-
-  document.querySelectorAll('[data-i18n]').forEach(function (el) {
-    el.textContent = t(el.getAttribute('data-i18n'));
-  });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) {
-    el.placeholder = t(el.getAttribute('data-i18n-placeholder'));
-  });
+  document.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
   document.title = t('appTitle');
   updateGreeting();
   renderNetworkBadge();
@@ -613,85 +543,52 @@ function applyLanguage(setting) {
 }
 
 function updateGreeting() {
-  var h = new Date().getHours();
-  var key = 'greetingAfternoon';
-  if (h < 12) key = 'greetingMorning';
-  else if (h >= 18) key = 'greetingEvening';
+  var h = new Date().getHours(), key = 'greetingAfternoon';
+  if (h < 12) key = 'greetingMorning'; else if (h >= 18) key = 'greetingEvening';
   var el = document.getElementById('greeting-text');
   if (el) el.textContent = t(key) + t('greetingReady');
 }
 
 /* ==================== 天气 ==================== */
-var weatherCodesZh = {
-  0: '晴', 1: '晴间少云', 2: '多云', 3: '阴', 45: '雾', 48: '雾凇',
-  51: '小毛毛雨', 53: '毛毛雨', 55: '大毛毛雨', 56: '冻毛毛雨', 57: '强冻毛毛雨',
-  61: '小雨', 63: '中雨', 65: '大雨', 66: '冻雨', 67: '强冻雨',
-  71: '小雪', 73: '中雪', 75: '大雪', 77: '米雪',
-  80: '阵雨', 81: '强阵雨', 82: '暴雨', 85: '阵雪', 86: '强阵雪',
-  95: '雷阵雨', 96: '雷阵雨伴冰雹', 99: '强雷阵雨伴冰雹'
-};
-var weatherCodesEn = {
-  0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Rime Fog',
-  51: 'Light Drizzle', 53: 'Drizzle', 55: 'Dense Drizzle', 56: 'Freezing Drizzle', 57: 'Freezing Drizzle',
-  61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain', 66: 'Freezing Rain', 67: 'Freezing Rain',
-  71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow', 77: 'Snow Grains',
-  80: 'Showers', 81: 'Showers', 82: 'Violent Showers', 85: 'Snow Showers', 86: 'Snow Showers',
-  95: 'Thunderstorm', 96: 'Thunderstorm + Hail', 99: 'Thunderstorm + Hail'
-};
+var weatherCodesZh = { 0: '晴', 1: '晴间少云', 2: '多云', 3: '阴', 45: '雾', 48: '雾凇', 51: '小毛毛雨', 53: '毛毛雨', 55: '大毛毛雨', 56: '冻毛毛雨', 57: '强冻毛毛雨', 61: '小雨', 63: '中雨', 65: '大雨', 66: '冻雨', 67: '强冻雨', 71: '小雪', 73: '中雪', 75: '大雪', 77: '米雪', 80: '阵雨', 81: '强阵雨', 82: '暴雨', 85: '阵雪', 86: '强阵雪', 95: '雷阵雨', 96: '雷阵雨伴冰雹', 99: '强雷阵雨伴冰雹' };
+var weatherCodesEn = { 0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Rime Fog', 51: 'Light Drizzle', 53: 'Drizzle', 55: 'Dense Drizzle', 56: 'Freezing Drizzle', 57: 'Freezing Drizzle', 61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain', 66: 'Freezing Rain', 67: 'Freezing Rain', 71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow', 77: 'Snow Grains', 80: 'Showers', 81: 'Showers', 82: 'Violent Showers', 85: 'Snow Showers', 86: 'Snow Showers', 95: 'Thunderstorm', 96: 'Thunderstorm + Hail', 99: 'Thunderstorm + Hail' };
 
-var weatherCityName = '';
-var lastWeatherFetch = 0;
-var weatherBusy = false;
-var geoAsked = false;
+var weatherCityName = '', lastWeatherFetch = 0, weatherBusy = false, geoAsked = false;
 
 function fetchWeatherByCoords(lat, lon, cityName) {
   if (typeof lat !== 'number' || typeof lon !== 'number' || !isFinite(lat) || !isFinite(lon)) return;
   if (cityName) weatherCityName = cityName;
-
   var cityEl = document.getElementById('weather-city');
   if (cityEl) cityEl.textContent = weatherCityName || t('local');
-
   if (weatherBusy) return;
   weatherBusy = true;
-
   var map = currentLang === 'zh' ? weatherCodesZh : weatherCodesEn;
-  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat +
-            '&longitude=' + lon + '&current=temperature_2m,weather_code,wind_speed_10m';
-
+  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code,wind_speed_10m';
   fetchJSON(url, 7000)
     .then(function (data) {
       if (!data || !data.current) throw new Error('bad weather data');
       var cw = data.current;
       document.getElementById('weather-temp').textContent = Math.round(cw.temperature_2m) + '°';
-      document.getElementById('weather-desc-text').textContent =
-        map[cw.weather_code] || (currentLang === 'zh' ? '晴朗' : 'Clear');
+      document.getElementById('weather-desc-text').textContent = map[cw.weather_code] || (currentLang === 'zh' ? '晴朗' : 'Clear');
       var wind = (typeof cw.wind_speed_10m === 'number') ? Math.round(cw.wind_speed_10m) : '--';
       document.getElementById('weather-wind').textContent = t('windSpeed') + wind + ' km/h';
       lastWeatherFetch = Date.now();
     })
-    .catch(function () {
-      var d = document.getElementById('weather-desc-text');
-      if (d) d.textContent = t('weatherFail');
-    })
+    .catch(function () { var d = document.getElementById('weather-desc-text'); if (d) d.textContent = t('weatherFail'); })
     .finally(function () { weatherBusy = false; });
 }
 
 function refreshWeather() {
-  if (networkInfo.lat !== null && networkInfo.lon !== null) {
-    fetchWeatherByCoords(networkInfo.lat, networkInfo.lon);
-  } else {
-    fetchWeatherByCoords(39.9042, 116.4074, t('local'));
-  }
+  if (networkInfo.lat !== null && networkInfo.lon !== null) fetchWeatherByCoords(networkInfo.lat, networkInfo.lon);
+  else fetchWeatherByCoords(39.9042, 116.4074, t('local'));
 }
 
 function tryPreciseLocation() {
   if (geoAsked || !navigator.geolocation) return;
   geoAsked = true;
   navigator.geolocation.getCurrentPosition(
-    function (pos) {
-      fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude);
-    },
-    function () { /* 忽略 */ },
+    function (pos) { fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude); },
+    function () {},
     { timeout: 8000, maximumAge: 600000, enableHighAccuracy: false }
   );
 }
@@ -702,19 +599,14 @@ function initWeather() {
     setTimeout(function () {
       if (document.hidden) return;
       if (navigator.permissions && navigator.permissions.query) {
-        navigator.permissions.query({ name: 'geolocation' })
-          .then(function (p) { if (p.state === 'granted') tryPreciseLocation(); })
-          .catch(function () {});
+        navigator.permissions.query({ name: 'geolocation' }).then(function (p) { if (p.state === 'granted') tryPreciseLocation(); }).catch(function () {});
       }
     }, 2500);
   });
 }
 
 /* ==================== 标签页与导航 ==================== */
-var tabs = [{
-  id: 'tab_init', type: 'home', title: '', url: '',
-  iframe: null, history: [{ type: 'home' }], historyIndex: 0
-}];
+var tabs = [{ id: 'tab_init', type: 'home', title: '', url: '', iframe: null, history: [{ type: 'home' }], historyIndex: 0 }];
 var activeTabId = 'tab_init';
 
 var $urlInput = document.getElementById('url-input');
@@ -736,27 +628,21 @@ function tabTitle(tab) {
 function renderTopTabs() {
   var container = document.getElementById('tabs-container');
   var frag = document.createDocumentFragment();
-
   tabs.forEach(function (tab) {
     var el = document.createElement('div');
     el.className = 'top-tab' + (tab.id === activeTabId ? ' active' : '');
     el.dataset.id = tab.id;
-
     var span = document.createElement('span');
     span.className = 'tab-title';
     span.textContent = tabTitle(tab);
-
     var close = document.createElement('button');
     close.className = 'close-tab';
     close.dataset.id = tab.id;
-    close.setAttribute('title', '关闭');
     close.textContent = '×';
-
     el.appendChild(span);
     el.appendChild(close);
     frag.appendChild(el);
   });
-
   container.textContent = '';
   container.appendChild(frag);
 }
@@ -772,11 +658,7 @@ function updateTabActiveStates() {
   var container = document.getElementById('tabs-container');
   container.addEventListener('click', function (e) {
     var closeBtn = e.target.closest ? e.target.closest('.close-tab') : null;
-    if (closeBtn) {
-      e.stopPropagation();
-      closeTab(closeBtn.dataset.id);
-      return;
-    }
+    if (closeBtn) { e.stopPropagation(); closeTab(closeBtn.dataset.id); return; }
     var tabEl = e.target.closest ? e.target.closest('.top-tab') : null;
     if (tabEl) switchTab(tabEl.dataset.id);
   }, { passive: true });
@@ -788,7 +670,6 @@ function applyTabState(tab, state) {
     tab.url = state.url;
     if (state.title) tab.title = state.title;
   }
-
   var isHome = state.type === 'home';
   $homeView.style.display = isHome ? 'flex' : 'none';
 
@@ -805,8 +686,7 @@ function applyTabState(tab, state) {
     if (!iframe) {
       iframe = document.createElement('iframe');
       iframe.id = 'frame_' + tab.id;
-      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals');
-      iframe.dataset.url = state.url;
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals');
       iframe.src = state.url;
       $framesContainer.appendChild(iframe);
       tab.iframe = iframe;
@@ -820,7 +700,6 @@ function applyTabState(tab, state) {
     $urlInput.value = '';
     $addressWrap.classList.remove('loading');
   }
-
   updateTabActiveStates();
 }
 
@@ -867,10 +746,7 @@ function createNewTab() {
     }
   }
   var id = 'tab_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-  tabs.push({
-    id: id, type: 'home', title: '', url: '',
-    iframe: null, history: [{ type: 'home' }], historyIndex: 0
-  });
+  tabs.push({ id: id, type: 'home', title: '', url: '', iframe: null, history: [{ type: 'home' }], historyIndex: 0 });
   activeTabId = id;
   renderTopTabs();
   switchTab(id);
@@ -879,17 +755,10 @@ function createNewTab() {
 function closeTab(id) {
   var index = tabs.findIndex(function (x) { return x.id === id; });
   if (index === -1) return;
-
   if (tabs[index].iframe) { tabs[index].iframe.remove(); tabs[index].iframe = null; }
   tabs.splice(index, 1);
-
-  if (tabs.length === 0) {
-    createNewTab();
-    return;
-  }
-  if (activeTabId === id) {
-    activeTabId = tabs[Math.max(0, index - 1)].id;
-  }
+  if (tabs.length === 0) { createNewTab(); return; }
+  if (activeTabId === id) activeTabId = tabs[Math.max(0, index - 1)].id;
   renderTopTabs();
   switchTab(activeTabId);
 }
@@ -901,56 +770,31 @@ function normalizeUrl(input) {
   if (/^(https?:\/\/)?([\w\-]+\.)+[a-z]{2,}(:\d+)?(\/.*)?$/i.test(q) && q.indexOf(' ') === -1) {
     return /^https?:\/\//i.test(q) ? q : 'https://' + q;
   }
+  // 恢复国外 Bing
   return 'https://www.bing.com/search?q=' + encodeURIComponent(q);
 }
 
 function processNavigationInCurrentTab(input, isHistoryAction) {
   var processedUrl = normalizeUrl(input);
   if (!processedUrl) return;
-
   var tab = tabs.find(function (x) { return x.id === activeTabId; });
   if (!tab) return;
-
   var title = String(input || '').trim().slice(0, 60);
-  if (!title) {
-    try { title = new URL(processedUrl).hostname; } catch (e) { title = processedUrl.slice(0, 60); }
-  }
-
+  if (!title) { try { title = new URL(processedUrl).hostname; } catch (e) { title = processedUrl.slice(0, 60); } }
   var stateObj = { type: 'url', url: processedUrl, title: title };
-
   if (!isHistoryAction) {
     tab.history = tab.history.slice(0, tab.historyIndex + 1);
     tab.history.push(stateObj);
     tab.historyIndex = tab.history.length - 1;
   }
-
   applyTabState(tab, stateObj);
   updateNavButtons();
   renderTopTabs();
 }
 
-function handleKeyDown(e) {
-  if (e.key === 'Enter') {
-    processNavigationInCurrentTab(e.target.value, false);
-    e.target.blur();
-  }
-}
-function handleHomeKeyDown(e) {
-  if (e.key === 'Enter') {
-    var v = e.target.value;
-    processNavigationInCurrentTab(v, false);
-    e.target.value = '';
-    e.target.blur();
-  }
-}
-function handleBottomKeyDown(e) {
-  if (e.key === 'Enter') {
-    var v = e.target.value;
-    processNavigationInCurrentTab(v, false);
-    e.target.value = '';
-    e.target.blur();
-  }
-}
+function handleKeyDown(e) { if (e.key === 'Enter') { processNavigationInCurrentTab(e.target.value, false); e.target.blur(); } }
+function handleHomeKeyDown(e) { if (e.key === 'Enter') { var v = e.target.value; processNavigationInCurrentTab(v, false); e.target.value = ''; e.target.blur(); } }
+function handleBottomKeyDown(e) { if (e.key === 'Enter') { var v = e.target.value; processNavigationInCurrentTab(v, false); e.target.value = ''; e.target.blur(); } }
 
 function showHome() {
   var tab = tabs.find(function (x) { return x.id === activeTabId; });
@@ -977,20 +821,13 @@ function reloadPage() {
 
 /* ==================== 面板 / 设置 ==================== */
 function toggleSettingsView(show) { $settingsView.classList.toggle('show', !!show); }
-
 function togglePanel(type) {
   if (!type) { $panelView.classList.remove('show'); return; }
   $panelView.classList.add('show');
   $panelTitle.textContent = (type === 'bookmarks') ? t('bookmarks') : t('history');
   $panelContent.innerHTML = '<p style="text-align:center;color:var(--text-muted);margin-top:40px;">' + t('noRecords') + '</p>';
 }
-
-function clearData() {
-  if (confirm(t('alertClearData'))) {
-    try { localStorage.clear(); } catch (e) {}
-    location.reload();
-  }
-}
+function clearData() { if (confirm(t('alertClearData'))) { try { localStorage.clear(); } catch (e) {} location.reload(); } }
 
 /* ==================== 刷新策略 ==================== */
 function initRefreshPolicy() {
@@ -998,7 +835,6 @@ function initRefreshPolicy() {
     if (document.hidden) return;
     if (Date.now() - lastWeatherFetch > 900000) refreshWeather();
   }, 300000);
-
   document.addEventListener('visibilitychange', function () {
     if (document.hidden) return;
     if (!networkInfo.ip && !networkInfo.countryCode) detectNetworkLocation();
