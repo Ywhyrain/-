@@ -8,12 +8,19 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f2f2f7">
-<title>轻舟</title>
-<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxMDAgMTAwIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgcng9IjIwIiBmaWxsPSIjMjY3NWU4Ii8+PHBhdGggZD0iTTUwIDIwIEw4MCA1MCBMNjAgODAgTDQwIDUwIEwyMCA1MCBaIiBmaWxsPSIjZmZmIi8+PC9zdmc+"/>
+<title>轻舟浏览器</title>
+
+<!-- ===== 开头图标：抽象几何（纯 data URI，零外部请求） ===== -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231a73e8'/%3E%3Cstop offset='1' stop-color='%236ab0ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='24' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='50' r='26' fill='none' stroke='%23ffffff' stroke-width='8' stroke-linecap='round' stroke-dasharray='130 34' transform='rotate(-45 50 50)'/%3E%3Ccircle cx='50' cy='50' r='6' fill='%23ffffff'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231a73e8'/%3E%3Cstop offset='1' stop-color='%236ab0ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23g)'/%3E%3Ccircle cx='50' cy='50' r='26' fill='none' stroke='%23ffffff' stroke-width='8' stroke-linecap='round' stroke-dasharray='130 34' transform='rotate(-45 50 50)'/%3E%3Ccircle cx='50' cy='50' r='6' fill='%23ffffff'/%3E%3C/svg%3E">
+<meta name="apple-mobile-web-app-title" content="轻舟浏览器">
+<meta name="application-name" content="轻舟浏览器">
+<!-- ===== 图标结束 ===== -->
+
 <style>
 :root {
   --bg-color: #f8f9fa;
-  --toolbar-bg: #ffffff; 
+  --toolbar-bg: #ffffff;
   --text-color: #202124;
   --text-muted: #5f6368;
   --border-color: #e0e0e0;
@@ -24,7 +31,7 @@
   --danger: #d93025;
 }
 
-/* 极致 OLED 纯黑深色模式 */
+/* OLED 纯黑深色模式 */
 [data-theme="dark"] {
   --bg-color: #000000;
   --toolbar-bg: #121212;
@@ -39,11 +46,13 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0; background: var(--bg-color); color: var(--text-color);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
   height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
 }
 
 /* 顶部标签页栏 */
@@ -51,6 +60,7 @@ body {
   display: flex; align-items: center; background: var(--bg-color);
   padding: 6px 8px 0 8px; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--border-color);
   z-index: 1001; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain;
 }
 #top-tabs-bar::-webkit-scrollbar { display: none; }
 
@@ -59,6 +69,7 @@ body {
   padding: 5px 10px; border-radius: 6px 6px 0 0; font-size: 12px; max-width: 160px; min-width: 110px;
   border: 1px solid var(--border-color); border-bottom: none; cursor: pointer; color: var(--text-muted);
   position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  contain: layout style;
 }
 .top-tab.active { background: var(--toolbar-bg); color: var(--text-color); font-weight: 500; border-top: 2px solid var(--tint-color); border-bottom: 1px solid var(--toolbar-bg); }
 .top-tab .close-tab { background: transparent; border: none; color: var(--text-muted); font-size: 12px; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
@@ -106,50 +117,60 @@ main { flex: 1; position: relative; background: var(--bg-color); overflow: hidde
 
 /* 内嵌 Web 容器 */
 #frames-container { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
-iframe { width: 100%; height: 100%; border: none; background: #fff; display: none; position: absolute; inset: 0; }
+iframe {
+  width: 100%; height: 100%; border: none; background: #fff; display: none; position: absolute; inset: 0;
+  will-change: transform; backface-visibility: hidden;
+}
 iframe.active { display: block; pointer-events: auto; }
 
 /* 主页 */
 #home-view {
-  position: absolute; inset: 0; z-index: 20; overflow-y: auto; padding: 30px 20px;
-  display: flex; flex-direction: column; align-items: center; -webkit-overflow-scrolling: touch;
+  position: absolute; inset: 0; z-index: 20; overflow-y: auto; padding: 28px 20px 40px;
+  display: flex; flex-direction: column; align-items: center;
+  -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
 }
-.greeting { font-size: 24px; font-weight: 700; margin-top: 10px; margin-bottom: 5px; text-align: center; }
+.greeting { font-size: 24px; font-weight: 700; margin-top: 6px; margin-bottom: 6px; text-align: center; }
 .network-badge {
   display: inline-flex; align-items: center; gap: 6px; background: var(--card-bg); border: 1px solid var(--border-color);
   padding: 5px 12px; border-radius: 16px; font-size: 12px; color: var(--text-muted);
-  margin-bottom: 20px; cursor: pointer; box-shadow: var(--shadow);
+  margin-bottom: 22px; cursor: pointer; box-shadow: var(--shadow);
 }
 
-.api-dashboard { width: 100%; max-width: 600px; margin-bottom: 12px; }
+/* 主页大搜索框（加大，位于天气模块上方） */
+.home-google-search {
+  width: 100%; max-width: 640px; display: flex; align-items: center;
+  background: var(--card-bg); border: 1px solid var(--border-color);
+  border-radius: 32px; padding: 0 24px; height: 60px; box-shadow: var(--shadow);
+  margin-bottom: 22px; transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.home-google-search:hover, .home-google-search:focus-within {
+  border-color: var(--tint-color);
+  box-shadow: 0 6px 22px rgba(26,115,232,0.22);
+}
+.home-google-search svg { margin-right: 14px; flex-shrink: 0; fill: var(--text-muted); }
+.home-google-search input {
+  flex: 1; border: none; background: transparent; color: var(--text-color);
+  font-size: 17px; outline: none;
+}
+
+/* 天气等 API 卡片 */
+.api-dashboard { width: 100%; max-width: 640px; margin-bottom: 12px; }
 .api-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 16px; box-shadow: var(--shadow); }
 .api-card-title { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; display: flex; justify-content: space-between; }
 .weather-info { display: flex; align-items: center; gap: 10px; }
 .weather-temp { font-size: 24px; font-weight: 700; color: var(--tint-color); }
 .weather-desc { font-size: 12px; }
 
-/* 主页 Bing 样式大搜索框 */
-.home-google-search {
-  width: 100%; max-width: 600px; display: flex; align-items: center;
-  background: var(--card-bg); border: 1px solid var(--border-color);
-  border-radius: 28px; padding: 0 18px; height: 48px; box-shadow: var(--shadow);
-  margin-bottom: 20px; transition: all 0.2s ease;
-}
-.home-google-search:hover, .home-google-search:focus-within {
-  border-color: var(--tint-color);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-}
-.home-google-search svg { margin-right: 12px; flex-shrink: 0; fill: var(--text-muted); }
-.home-google-search input {
-  flex: 1; border: none; background: transparent; color: var(--text-color);
-  font-size: 15px; outline: none;
-}
-
 /* 面板与设置 */
-.overlay-panel { position: absolute; inset: 0; background: var(--bg-color); z-index: 2000; transform: translateY(100%); display: flex; flex-direction: column; transition: transform 0.25s cubic-bezier(0.16,1,0.3,1); }
+.overlay-panel {
+  position: absolute; inset: 0; background: var(--bg-color); z-index: 2000;
+  transform: translateY(100%); display: flex; flex-direction: column;
+  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+  will-change: transform; backface-visibility: hidden;
+}
 .overlay-panel.show { transform: translateY(0); }
 .panel-header { display: flex; justify-content: space-between; align-items: center; padding: calc(env(safe-area-inset-top) + 12px) 16px 12px; border-bottom: 1px solid var(--border-color); font-weight: 600; font-size: 16px; background: var(--toolbar-bg); }
-.panel-content { flex: 1; overflow-y: auto; padding: 16px; }
+.panel-content { flex: 1; overflow-y: auto; padding: 16px; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 .clear-all-btn { display: block; width: 100%; padding: 10px; margin-bottom: 12px; background: var(--card-bg); color: var(--danger); border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; }
 .setting-group { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow); }
 .setting-item { padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
@@ -184,7 +205,15 @@ iframe.active { display: block; pointer-events: auto; }
   <div id="home-view">
     <div class="greeting" id="greeting-text">下午好</div>
     <div class="network-badge" id="network-badge" onclick="copyIP()"><span>🌐</span><span id="network-location" data-i18n="locating">定位中...</span></div>
-    
+
+    <!-- 主页大搜索框 -->
+    <div class="home-google-search">
+      <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
+      </svg>
+      <input type="text" id="home-search-input" placeholder="在全网中搜索..." onkeydown="handleHomeKeyDown(event)" autocomplete="off" data-i18n-placeholder="searchPlaceholder">
+    </div>
+
     <div class="api-dashboard" id="api-dashboard">
       <div class="api-card">
         <div class="api-card-title"><span data-i18n="weatherTitle">📍 本地天气</span><span id="weather-city" style="font-size:10px;" data-i18n="locating">定位中...</span></div>
@@ -196,14 +225,6 @@ iframe.active { display: block; pointer-events: auto; }
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- 主页大搜索框 -->
-    <div class="home-google-search">
-      <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20">
-        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
-      </svg>
-      <input type="text" id="home-search-input" placeholder="在全网中搜索..." onkeydown="handleHomeKeyDown(event)" autocomplete="off" data-i18n-placeholder="searchPlaceholder">
     </div>
   </div>
 
@@ -222,7 +243,7 @@ iframe.active { display: block; pointer-events: auto; }
         <div class="setting-item"><span data-i18n="theme">主题</span><select id="theme-select" onchange="setTheme(this.value)"><option value="auto">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></div>
       </div>
       <button class="clear-all-btn" onclick="clearData()" data-i18n="clearData">清除所有数据</button>
-      <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;">轻舟 v1.0</div>
+      <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;">轻舟浏览器 v1.0</div>
     </div>
   </div>
 </main>
@@ -237,7 +258,7 @@ iframe.active { display: block; pointer-events: auto; }
 <script>
 var i18n = {
   zh: {
-    appTitle: "轻舟", searchPlaceholder: "搜索或输入网址", bottomSearchPlaceholder: "搜索网页...",
+    appTitle: "轻舟浏览器", searchPlaceholder: "搜索或输入网址", bottomSearchPlaceholder: "搜索网页...",
     bookmarks: "书签", history: "历史", home: "主页", settings: "设置",
     theme: "主题", language: "语言 / Language", clearData: "清除所有数据", alertClearData: "确定要清除本设备上的所有数据吗？",
     networkLocation: "网络环境", locating: "定位中...", networkFail: "获取失败",
@@ -246,7 +267,7 @@ var i18n = {
     ipCopied: "已复制 IP："
   },
   en: {
-    appTitle: "Light Boat", searchPlaceholder: "Search or enter address", bottomSearchPlaceholder: "Search...",
+    appTitle: "Light Boat Browser", searchPlaceholder: "Search or enter address", bottomSearchPlaceholder: "Search...",
     bookmarks: "Bookmarks", history: "History", home: "Home", settings: "Settings",
     theme: "Theme", language: "Language / 语言", clearData: "Clear All Data", alertClearData: "Are you sure you want to clear all data on this device?",
     networkLocation: "Network", locating: "Detecting...", networkFail: "Failed",
@@ -270,7 +291,7 @@ function evaluateAutoLanguage() {
 function applyLanguage(setting) {
   currentLangSetting = setting;
   localStorage.setItem('qz_lang', setting);
-  
+
   if (setting === 'auto') {
     currentLang = evaluateAutoLanguage();
   } else {
@@ -412,7 +433,7 @@ function updateGreeting() {
   document.getElementById('greeting-text').textContent = t(key) + t('greetingReady');
 }
 
-// 核心优化：直接将搜索词包装为 Bing 官方搜索链接，实现“直接把 Bing 放进 iframe”
+// 搜索词包装为 Bing 官方搜索链接
 function normalizeUrl(input) {
   var q = input.trim(); if (!q) return '';
   if (/^(https?:\/\/)?([\w\-]+\.)+[a-z]{2,}(:\d+)?(\/.*)?$/i.test(q) && !q.includes(' ')) {
@@ -443,13 +464,13 @@ function processNavigationInCurrentTab(input, isHistoryAction) {
 function applyTabState(tab, state) {
   tab.type = state.type;
   tab.title = state.title || '起始页';
-  
+
   document.querySelectorAll('iframe').forEach(f => f.classList.remove('active'));
   $homeView.style.display = 'none';
 
   if (state.type === 'home') {
     $homeView.style.display = 'flex';
-    $urlInput.value = '';$addressWrap.classList.remove('loading');
+    $urlInput.value = ''; $addressWrap.classList.remove('loading');
     if (tab.iframe) { tab.iframe.remove(); tab.iframe = null; }
   } else if (state.type === 'url') {
     tab.url = state.url;
@@ -502,7 +523,7 @@ function goForward() {
 function updateNavButtons() {
   var tab = tabs.find(t => t.id === activeTabId);
   if (!tab) return;
-  $backBtn.disabled = (tab.historyIndex <= 0);$forwardBtn.disabled = (tab.historyIndex >= tab.history.length - 1);
+  $backBtn.disabled = (tab.historyIndex <= 0); $forwardBtn.disabled = (tab.historyIndex >= tab.history.length - 1);
 }
 
 function createNewTab() {
@@ -551,7 +572,7 @@ function showHome() {
 function toggleSettingsView(show) { $settingsView.classList.toggle('show', show); }
 function togglePanel(type) {
   if (!type) { $panelView.classList.remove('show'); return; }
-  $panelView.classList.add('show');$panelTitle.textContent = type === 'bookmarks' ? '书签' : '历史';
+  $panelView.classList.add('show'); $panelTitle.textContent = type === 'bookmarks' ? '书签' : '历史';
   $panelContent.innerHTML = `<p style="text-align:center;color:var(--text-muted);margin-top:40px;">暂无记录（本设备本地独立隔离）</p>`;
 }
 function clearData() { if (confirm(t('alertClearData'))) { localStorage.clear(); location.reload(); } }
