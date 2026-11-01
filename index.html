@@ -1,827 +1,983 @@
 <!doctype html>
-<html lang="zh-CN" data-theme="light">
+<html lang="zh-CN" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<meta name="referrer" content="no-referrer">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="轻舟">
-<meta name="theme-color" content="#f2f2f7">
-<title>轻舟</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%233b7df0'/%3E%3Cpath d='M32 12 L48 37 L36 51 L36 39 L15 39 Z' fill='%23ffffff'/%3E%3C/svg%3E">
-
-<script>
-// 在 head 中同步绘制不透明的 PNG 图标，确保苹果系统能完美抓取
-(function() {
-  try {
-    function generateIcon(size) {
-      var canvas = document.createElement('canvas');
-      canvas.width = canvas.height = size;
-      var ctx = canvas.getContext('2d');
-      var s = size / 64;
-      ctx.fillStyle = '#3b7df0';
-      ctx.fillRect(0, 0, size, size);
-      ctx.fillStyle = '#ffffff';
-      ctx.beginPath();
-      ctx.moveTo(32 * s, 12 * s);
-      ctx.lineTo(48 * s, 37 * s);
-      ctx.lineTo(36 * s, 51 * s);
-      ctx.lineTo(36 * s, 39 * s);
-      ctx.lineTo(15 * s, 39 * s);
-      ctx.closePath();
-      ctx.fill();
-      return canvas.toDataURL('image/png');
-    }
-    var sizes = [180, 192, 512];
-    sizes.forEach(function(sz) {
-      var url = generateIcon(sz);
-      var link = document.createElement('link');
-      link.rel = 'apple-touch-icon';
-      link.setAttribute('sizes', sz + 'x' + sz);
-      link.href = url;
-      document.head.appendChild(link);
-    });
-  } catch(e) {}
-})();
-</script>
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>轻舟 OS - Web Desktop</title>
 <style>
-:root {
-  --bg-color: #f8f9fa;
-  --toolbar-bg: #ffffff;
-  --text-color: #202124;
-  --text-muted: #5f6368;
-  --border-color: #e0e0e0;
-  --tint-color: #1a73e8;
-  --panel-bg: #ffffff;
-  --card-bg: #ffffff;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --danger: #d93025;
+/* ================= 全局变量与基础 ================= */
+:root{
+  --acc:#0078d4;--acc-fg:#fff;--bg:#f3f3f3;--card:#fff;--pan:rgba(249,249,249,.9);
+  --txt:#1a1a1a;--txt2:#5c5c5c;--ln:rgba(0,0,0,.08);--hov:rgba(0,0,0,.05);--hov2:rgba(0,0,0,.1);
+  --tb:rgba(243,243,243,.85);--win:#f9f9f9;--shd:0 18px 44px rgba(0,0,0,.22);--shd-sm:0 4px 14px rgba(0,0,0,.12)
 }
+[data-theme="dark"]{
+  --bg:#202020;--card:#2b2b2b;--pan:rgba(44,44,44,.9);--txt:#fff;--txt2:#c3c3c3;
+  --ln:rgba(255,255,255,.09);--hov:rgba(255,255,255,.06);--hov2:rgba(255,255,255,.1);
+  --tb:rgba(32,32,32,.85);--win:#202020;--shd:0 18px 48px rgba(0,0,0,.66);--shd-sm:0 4px 16px rgba(0,0,0,.5)
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{height:100%;margin:0;overflow:hidden}
+body{font-family:"Segoe UI","Microsoft YaHei",sans-serif;font-size:14px;color:var(--txt);background:#000}
+input,textarea,select{font-family:inherit;-webkit-user-select:text;user-select:text}button{font-family:inherit;cursor:pointer}
+::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#888;border-radius:6px;border:2px solid transparent;background-clip:content-box}::-webkit-scrollbar-track{background:transparent}
+.hide{display:none!important}.ic{display:block;flex-shrink:0}
 
-[data-theme="dark"] {
-  --bg-color: #000000;
-  --toolbar-bg: #121212;
-  --text-color: #e8eaed;
-  --text-muted: #9aa0a6;
-  --border-color: #262626;
-  --tint-color: #8ab4f8;
-  --panel-bg: #121212;
-  --card-bg: #161616;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --danger: #f28b82;
+/* ================= 1. 锁屏界面 (手机风格) ================= */
+#lock-screen, #desktop {
+  background: url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop') center/cover;
 }
+#lock-screen{
+  position:fixed;inset:0;z-index:10000;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 20px;
+  transition:transform 0.6s cubic-bezier(0.16,1,0.3,1),opacity 0.6s;
+}
+#lock-screen.unlocked{transform:translateY(-100%);opacity:0;pointer-events:none}
+.lock-time{color:#fff;font-size:80px;font-weight:200;text-shadow:0 4px 20px rgba(0,0,0,.5);margin-top:50px}
+.lock-date{color:rgba(255,255,255,.8);font-size:18px;margin-top:-10px}
+.lock-bottom{color:#fff;display:flex;flex-direction:column;align-items:center;gap:15px;animation:bounce 2s infinite}
+.lock-bottom svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:2}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body {
-  margin: 0; background: var(--bg-color); color: var(--text-color);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft YaHei", sans-serif;
-  height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
-  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+/* ================= 2. 登录界面 ================= */
+#login-screen{
+  position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.4);backdrop-filter:blur(20px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;
+  transition:opacity 0.5s;opacity:1;
 }
+#login-screen.hide-login{opacity:0;pointer-events:none}
+.login-avatar{width:100px;height:100px;border-radius:50%;background:var(--acc);display:grid;place-items:center;font-size:40px;font-weight:600;margin-bottom:20px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.login-name{font-size:24px;margin-bottom:20px;font-weight:500}
+.login-box{display:flex;gap:10px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:30px;padding:5px 5px 5px 20px;align-items:center}
+.login-box input{background:transparent;border:none;color:#fff;font-size:16px;outline:none;width:200px}
+.login-box button{background:var(--acc);border:none;color:#fff;border-radius:25px;padding:10px 20px;font-size:14px;font-weight:600;transition:0.2s}
+.login-box button:hover{filter:brightness(1.2)}
 
-/* 顶部标签页栏 - 适配 PWA 刘海安全区 */
-#top-tabs-bar {
-  display: flex; align-items: center; background: var(--bg-color);
-  /* 关键：添加 safe-area-inset-top 防止被时间、电量遮挡 */
-  padding: calc(env(safe-area-inset-top) + 6px) 8px 0 8px; 
-  gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--border-color);
-  z-index: 1001; scrollbar-width: none;
-}
-#top-tabs-bar::-webkit-scrollbar { display: none; }
+/* ================= 3. 桌面层 ================= */
+#desktop{position:fixed;inset:0;overflow:hidden}
+#desk-icons{position:absolute;left:10px;top:10px;display:grid;grid-template-columns:repeat(auto-fill,88px);grid-auto-rows:96px;gap:2px;padding:4px;max-height:calc(100% - 70px);overflow:auto;z-index:20}
+.desk-ic{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 2px;border-radius:6px;transition:background .15s;border:1px solid transparent;cursor:pointer}
+.desk-ic:hover{background:rgba(255,255,255,.14)}
+.desk-ic .ic{width:48px;height:48px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45))}
+.desk-ic span{font-size:11.5px;color:#fff;text-align:center;line-height:1.3;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.9)}
 
-.top-tab {
-  display: flex; align-items: center; gap: 8px; background: var(--toolbar-bg);
-  padding: 5px 10px 5px 12px; border-radius: 6px 6px 0 0; font-size: 12px; max-width: 160px; min-width: 104px;
-  border: 1px solid var(--border-color); border-bottom: none; cursor: pointer; color: var(--text-muted);
-  position: relative; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  flex-shrink: 0; contain: layout style;
-}
-.top-tab.active { background: var(--toolbar-bg); color: var(--text-color); font-weight: 500; border-top: 2px solid var(--tint-color); border-bottom: 1px solid var(--toolbar-bg); }
-.top-tab .tab-title { flex: 1; overflow: hidden; text-overflow: ellipsis; padding-top: 1px; }
-.top-tab .close-tab { background: transparent; border: none; color: var(--text-muted); font-size: 14px; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; flex-shrink: 0; line-height: 1; }
-.top-tab .close-tab:hover { background: rgba(0,0,0,0.1); }
-.new-tab-btn { background: transparent; border: none; color: var(--text-muted); font-size: 18px; padding: 4px 10px; cursor: pointer; border-radius: 4px; }
+/* ================= 4. 窗口系统 ================= */
+#win-layer{position:absolute;left:0;right:0;top:0;bottom:48px;overflow:hidden;z-index:100;pointer-events:none}
+.win{position:absolute;display:flex;flex-direction:column;overflow:hidden;background:var(--win);border:1px solid var(--ln);border-radius:8px;box-shadow:var(--shd);min-width:320px;min-height:200px;pointer-events:auto;animation:wIn .2s cubic-bezier(.16,1,.3,1)}
+@keyframes wIn{from{opacity:0;transform:scale(.95) translateY(20px)}to{opacity:1;transform:none}}
+.win.focused{box-shadow:0 26px 62px rgba(0,0,0,.5),0 0 0 1px rgba(0,0,0,.15)}
+[data-theme="dark"] .win.focused{box-shadow:0 26px 62px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.15)}
+.win.max{border-radius:0;border:none;top:0!important;left:0!important;width:100%!important;height:100%!important}
+.win.minimized{display:none}
+.win-tb{height:38px;flex:0 0 38px;display:flex;align-items:center;gap:9px;padding-left:12px;background:var(--win);touch-action:none;user-select:none}
+.win-tb-icon .ic{width:16px;height:16px}.win-tb-title{flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.win-ctrl{display:flex;height:100%;flex-shrink:0}.win-ctrl button{width:46px;height:100%;border:none;background:transparent;color:var(--txt);display:grid;place-items:center;transition:background .15s}
+.win-ctrl button svg{width:10px;height:10px;stroke:currentColor;stroke-width:1.1;fill:none}
+.win-ctrl button:hover{background:var(--hov2)}.win-ctrl button.close-btn:hover{background:#c42b1c;color:#fff}
+.win-body{flex:1;overflow:auto;position:relative;background:var(--win);outline:none}
 
-header {
-  display: flex; align-items: center; padding: 6px 10px;
-  background: var(--toolbar-bg); border-bottom: 1px solid var(--border-color); z-index: 1000; gap: 4px;
-}
-footer {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 6px 10px calc(env(safe-area-inset-bottom) + 6px);
-  background: var(--toolbar-bg); border-top: 1px solid var(--border-color); z-index: 1000; gap: 4px;
-}
+/* ================= 5. 任务栏 ================= */
+#taskbar{position:absolute;left:0;right:0;bottom:0;z-index:8000;height:48px;display:flex;align-items:center;background:var(--tb);backdrop-filter:blur(34px);border-top:1px solid var(--ln)}
+#tb-center{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:3px;height:100%;padding:0 6px;max-width:70%}
+#tb-apps{display:flex;align-items:center;gap:3px;overflow-x:auto;scrollbar-width:none}#tb-apps::-webkit-scrollbar{display:none}
+.tb-btn{width:42px;height:42px;border-radius:5px;border:none;background:transparent;display:grid;place-items:center;position:relative;color:var(--txt);flex-shrink:0}
+.tb-btn:hover{background:var(--hov2)}.tb-btn .ic{width:24px;height:24px}.tb-btn.start-btn .ic{width:26px;height:26px}
+.tb-btn.active::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:14px;height:3px;border-radius:2px;background:var(--acc)}
+#tb-right{position:absolute;right:6px;display:flex;align-items:center;height:100%;gap:2px}
+.tray-btn{height:40px;border:none;background:transparent;color:var(--txt);border-radius:5px;display:flex;align-items:center;gap:8px;padding:0 10px;transition:background .15s}
+.tray-btn:hover{background:var(--hov2)}#tb-clock{flex-direction:column;align-items:flex-end;line-height:1.22;padding:0 10px;font-variant-numeric:tabular-nums}#tb-clock .t1{font-size:12px}#tb-clock .t2{font-size:11px;color:var(--txt2)}
 
-.icon-btn {
-  background: transparent; border: none; color: var(--tint-color); padding: 6px; border-radius: 6px;
-  display: flex; justify-content: center; align-items: center; cursor: pointer; font-size: 14px; font-weight: 600;
-}
-.icon-btn:active { opacity: 0.5; }
-.icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-footer .icon-btn { flex-direction: column; gap: 2px; font-size: 10px; padding: 4px 6px; flex: 1; color: var(--text-muted); }
-footer .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
+/* ================= 6. 弹出面板 ================= */
+.pop{position:absolute;background:var(--pan);backdrop-filter:blur(44px);border:1px solid var(--ln);border-radius:10px;box-shadow:var(--shd);z-index:8500;opacity:0;pointer-events:none;transition:.24s cubic-bezier(.16,1,.3,1)}
+.pop.open{opacity:1;pointer-events:auto}
+#start-menu{left:50%;bottom:56px;transform:translateX(-50%) translateY(18px) scale(.97);width:min(94vw,640px);height:min(78vh,680px);display:flex;flex-direction:column;overflow:hidden}
+#start-menu.open{transform:translateX(-50%) translateY(0) scale(1)}
+.sm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:4px;padding:20px;overflow-y:auto}
+.sm-app{display:flex;flex-direction:column;align-items:center;gap:8px;padding:13px 3px;border:none;background:transparent;border-radius:5px;color:var(--txt);font-size:11.5px}
+.sm-app:hover{background:var(--hov)}.sm-app .ic{width:32px;height:32px}
+.sm-foot{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;background:var(--hov);border-top:1px solid var(--ln);margin-top:auto}
+.sm-user{display:flex;align-items:center;gap:10px;font-size:12.5px;padding:6px 10px;border-radius:5px;border:none;background:transparent;color:var(--txt)}
+.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600;color:#fff;background:var(--acc)}
 
-/* 地址栏 */
-.address-bar {
-  flex: 1; display: flex; align-items: center; background: var(--bg-color);
-  border: 1px solid var(--border-color); border-radius: 18px; padding: 0 10px; height: 34px; position: relative;
-}
-.address-bar input {
-  flex: 1; border: none; background: transparent; color: var(--text-color);
-  font-size: 13px; outline: none; padding: 0 6px; text-align: center;
-}
-.address-bar input:focus { text-align: left; }
+#quick-panel{right:8px;bottom:56px;transform:translateY(18px) scale(.97);width:320px;padding:16px}
+#quick-panel.open{transform:translateY(0) scale(1)}
+.qs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+.qs-tile{height:66px;border-radius:8px;border:1px solid var(--ln);background:var(--card);color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:10.5px}
+.qs-tile.on{background:var(--acc);color:var(--acc-fg);border-color:var(--acc)}
+.qs-slider{display:flex;align-items:center;gap:12px;margin-bottom:12px}.qs-slider input[type=range]{flex:1;accent-color:var(--acc)}
+.qs-slider span{font-size:11px;color:var(--txt2);width:34px;text-align:right}
 
-.progress-line {
-  position: absolute; bottom: 0; left: 0; height: 2px; background: var(--tint-color);
-  width: 0%; transition: width 0.25s ease-out; border-radius: 0 0 18px 18px; opacity: 0;
-}
-.loading .progress-line { opacity: 1; animation: loading 1.5s infinite ease-out; }
-@keyframes loading { 0% { width: 0%; } 50% { width: 70%; } 100% { width: 95%; } }
+#ctx-menu{position:fixed;z-index:9600;min-width:180px;padding:5px;background:var(--pan);backdrop-filter:blur(40px);border:1px solid var(--ln);border-radius:8px;box-shadow:var(--shd);opacity:0;pointer-events:none;transition:.14s;font-size:12.5px}
+#ctx-menu.open{opacity:1;pointer-events:auto}
+.ctx-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border:none;background:transparent;color:var(--txt);border-radius:5px;text-align:left}
+.ctx-item:hover{background:var(--hov2)}
 
-main { flex: 1; position: relative; background: var(--bg-color); overflow: hidden; }
+#toasts{position:absolute;right:12px;bottom:60px;z-index:9200;display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none}
+.toast{background:var(--pan);backdrop-filter:blur(30px);border:1px solid var(--ln);border-radius:8px;box-shadow:var(--shd);padding:12px 16px;min-width:240px;max-width:340px;font-size:12.5px;animation:tIn .3s cubic-bezier(.16,1,.3,1)}
+@keyframes tIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+.toast b{display:block;margin-bottom:3px;font-size:12.5px}.toast p{margin:0;color:var(--txt2);font-size:11.5px;line-height:1.5}
 
-/* 内嵌 Web 容器 */
-#frames-container { position: absolute; inset: 0; z-index: 10; pointer-events: none; }
-iframe { width: 100%; height: 100%; border: none; background: var(--card-bg); display: none; position: absolute; inset: 0; }
-iframe.active { display: block; pointer-events: auto; }
+/* ================= 7. 应用特定样式 ================= */
+/* 资源管理器 */
+.explorer{display:flex;height:100%}.ex-side{width:170px;background:var(--hov);border-right:1px solid var(--ln);padding:8px;overflow-y:auto;flex-shrink:0}
+.ex-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:5px;font-size:12px;color:var(--txt);border:none;background:transparent;width:100%;text-align:left}
+.ex-item:hover{background:var(--hov2)}.ex-item.on{background:var(--hov2);font-weight:600}.ex-item .ic{width:16px;height:16px}
+.ex-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.ex-toolbar{height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--ln)}
+.ex-btn{padding:4px 10px;border:1px solid var(--ln);background:var(--win);border-radius:4px;font-size:12px;color:var(--txt)}.ex-btn:hover{background:var(--hov2)}
+.ex-path{font-size:12px;color:var(--txt2);flex:1}
+.ex-files{flex:1;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;align-content:start}
+.ex-file{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 6px;border-radius:6px;font-size:11px;text-align:center;word-break:break-all;cursor:default}
+.ex-file:hover{background:var(--hov)}.ex-file.on{background:rgba(0,120,212,.2);border:1px solid var(--acc)}.ex-file .ic{width:34px;height:34px}
+.ex-empty{grid-column:1/-1;text-align:center;padding:40px;color:var(--txt2);font-size:12px}
 
-/* 主页 */
-#home-view {
-  position: absolute; inset: 0; z-index: 20; overflow-y: auto; padding: 22px 20px 30px;
-  display: flex; flex-direction: column; align-items: center; -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-.brand-logo-wrap { margin-bottom: 12px; }
-.brand-logo { width: 58px; height: 58px; display: block; }
-.greeting { font-size: 23px; font-weight: 700; margin-top: 2px; margin-bottom: 10px; text-align: center; }
-.network-badge {
-  display: inline-flex; align-items: center; gap: 6px; background: var(--card-bg); border: 1px solid var(--border-color);
-  padding: 5px 12px; border-radius: 16px; font-size: 12px; color: var(--text-muted);
-  margin-bottom: 18px; cursor: pointer; box-shadow: var(--shadow); max-width: 100%;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+/* 超全设置面板 */
+.settings{display:flex;height:100%}.st-side{width:210px;background:var(--hov);border-right:1px solid var(--ln);padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.st-tab{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:5px;font-size:12.5px;color:var(--txt2);border:none;background:transparent;text-align:left;width:100%}
+.st-tab:hover{background:var(--hov2);color:var(--txt)}.st-tab.on{background:var(--hov2);color:var(--txt);font-weight:600}
+.st-main{flex:1;padding:24px 28px;overflow-y:auto}
+.st-card{background:var(--card);border:1px solid var(--ln);border-radius:8px;padding:14px 18px;margin-bottom:12px}
+.st-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--ln)}.st-row:last-child{border-bottom:none}
+.st-row .txt b{display:block;font-size:12.5px;font-weight:500}.st-row .txt small{display:block;font-size:11px;color:var(--txt2);margin-top:3px}
+.toggle{position:relative;width:42px;height:22px;border-radius:11px;background:var(--hov2);border:1px solid var(--ln);cursor:pointer;flex-shrink:0}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--txt2);transition:.2s}
+.toggle.on{background:var(--acc);border-color:var(--acc)}.toggle.on::after{left:23px;background:#fff}
+.st-sel{padding:6px 10px;border-radius:5px;border:1px solid var(--ln);background:var(--win);color:var(--txt);font-size:12px;outline:none;cursor:pointer}
 
-.api-dashboard { width: 100%; max-width: 640px; margin-bottom: 12px; }
-.api-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px 18px; box-shadow: var(--shadow); }
-.api-card-title { font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; display: flex; justify-content: space-between; }
-.weather-info { display: flex; align-items: center; gap: 12px; }
-.weather-temp { font-size: 28px; font-weight: 700; color: var(--tint-color); }
-.weather-desc { font-size: 12px; }
+/* 天气 */
+.weather{height:100%;overflow-y:auto;padding:20px;background:linear-gradient(160deg,#1d4f8f,#0b1d33);color:#fff;font-size:13px}
+.w-top{display:flex;justify-content:space-between;margin-bottom:20px}.w-city{font-size:17px;font-weight:600}
+.w-now{display:flex;align-items:center;gap:16px}.w-temp{font-size:56px;font-weight:200;line-height:1}
+.w-details{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-top:18px}
+.w-det{padding:12px;border-radius:9px;background:rgba(255,255,255,.1);font-size:11px}.w-det small{display:block;opacity:.72;margin-bottom:5px}.w-det b{font-size:16px;font-weight:500}
+.w-tip{padding:14px 16px;border-radius:10px;background:rgba(255,255,255,.1);font-size:12px;line-height:1.7;margin-top:16px}
 
-/* 主页大搜索框 */
-.home-google-search {
-  width: 100%; max-width: 640px; display: flex; align-items: center;
-  background: var(--card-bg); border: 1px solid var(--border-color);
-  border-radius: 30px; padding: 0 22px; height: 58px; box-shadow: var(--shadow);
-  margin-bottom: 22px; transition: border-color .18s ease, box-shadow .18s ease;
-  will-change: border-color;
-}
-@media (hover: hover) {
-  .home-google-search:hover { border-color: var(--tint-color); box-shadow: 0 4px 18px rgba(26,115,232,0.18); }
-}
-.home-google-search:focus-within {
-  border-color: var(--tint-color);
-  box-shadow: 0 4px 18px rgba(26,115,232,0.22);
-}
-.home-google-search svg { margin-right: 14px; flex-shrink: 0; fill: var(--text-muted); width: 22px; height: 22px; }
-.home-google-search input {
-  flex: 1; border: none; background: transparent; color: var(--text-color);
-  font-size: 16.5px; outline: none; min-width: 0;
-}
+/* 计算器、记事本、终端 */
+.calc{display:flex;flex-direction:column;height:100%;background:var(--hov)}.calc-disp{padding:18px 22px;text-align:right;font-size:38px;font-weight:300;background:var(--win);border-bottom:1px solid var(--ln);overflow:hidden}
+.calc-keys{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--ln)}
+.calc-keys button{border:none;background:var(--win);color:var(--txt);font-size:19px;cursor:pointer}.calc-keys button:hover{background:var(--hov2)}
+.calc-keys button.op{background:var(--hov);font-size:17px}.calc-keys button.eq{background:var(--acc);color:var(--acc-fg)}
+.np{display:flex;flex-direction:column;height:100%}.np-area{flex:1;border:none;outline:none;resize:none;padding:18px;background:var(--win);color:var(--txt);font-family:Consolas,"Courier New",monospace;font-size:13.5px;line-height:1.65}
+.term{height:100%;background:#0c0c0c;color:#d4d4d4;font-family:Consolas,"Courier New",monospace;font-size:12.5px;padding:14px;overflow-y:auto;line-height:1.6}
+.term-line{white-space:pre-wrap;word-break:break-word}.term-in{display:flex;gap:8px}.term-in span{color:#4cc2ff}.term-in input{flex:1;background:transparent;border:none;outline:none;color:#d4d4d4;font-family:inherit;font-size:inherit}
 
-/* 面板与设置 */
-.overlay-panel {
-  position: absolute; inset: 0; background: var(--bg-color); z-index: 2000;
-  transform: translateY(100%); display: flex; flex-direction: column;
-  transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
-  will-change: transform;
-}
-.overlay-panel.show { transform: translateY(0); }
-.panel-header { display: flex; justify-content: space-between; align-items: center; padding: calc(env(safe-area-inset-top) + 12px) 16px 12px; border-bottom: 1px solid var(--border-color); font-weight: 600; font-size: 16px; background: var(--toolbar-bg); }
-.panel-content { flex: 1; overflow-y: auto; padding: 16px; }
-.clear-all-btn { display: block; width: 100%; padding: 10px; margin-bottom: 12px; background: var(--card-bg); color: var(--danger); border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; font-weight: 600; text-align: center; cursor: pointer; }
-.setting-group { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow); }
-.setting-item { padding: 12px 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 15px; gap: 10px; }
-.setting-item:last-child { border-bottom: none; }
-.setting-item select { font-size: 14px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-color); color: var(--text-color); outline: none; }
-
-.bottom-search-bar { flex: 2; min-width: 120px; display: flex; align-items: center; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 16px; padding: 0 10px; height: 32px; margin: 0 4px; }
-.bottom-search-bar input { flex: 1; border: none; background: transparent; color: var(--text-color); font-size: 12px; outline: none; text-align: center; min-width: 0; }
-@media (max-width:500px) { footer .icon-btn span { display: none; } }
-
-@media (prefers-reduced-motion: reduce) {
-  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
-}
+/* ================= 浏览器专属集成样式 ================= */
+.qz-browser-wrap{display:flex;flex-direction:column;height:100%;background:var(--bg-color,#f8f9fa);color:var(--text-color,#202124);position:relative;overflow:hidden;}
+.qz-browser-wrap *{box-sizing:border-box;}
+.qz-top-tabs-bar{display:flex;align-items:center;background:var(--bg-color,#f8f9fa);padding:6px 8px 0 8px;gap:4px;overflow-x:auto;border-bottom:1px solid var(--border-color,#e0e0e0);z-index:1001;scrollbar-width:none;}
+.qz-top-tabs-bar::-webkit-scrollbar{display:none;}
+.qz-top-tab{display:flex;align-items:center;gap:8px;background:var(--toolbar-bg,#ffffff);padding:5px 10px 5px 12px;border-radius:6px 6px 0 0;font-size:12px;max-width:160px;min-width:104px;border:1px solid var(--border-color,#e0e0e0);border-bottom:none;cursor:pointer;color:var(--text-muted,#5f6368);position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+.qz-top-tab.active{background:var(--toolbar-bg,#ffffff);color:var(--text-color,#202124);font-weight:500;border-top:2px solid var(--tint-color,#1a73e8);border-bottom:1px solid var(--toolbar-bg,#ffffff);}
+.qz-top-tab .qz-tab-title{flex:1;overflow:hidden;text-overflow:ellipsis;padding-top:1px;}
+.qz-top-tab .qz-close-tab{background:transparent;border:none;color:var(--text-muted,#5f6368);font-size:14px;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex-shrink:0;line-height:1;}
+.qz-new-tab-btn{background:transparent;border:none;color:var(--text-muted,#5f6368);font-size:18px;padding:4px 10px;cursor:pointer;border-radius:4px;}
+.qz-header{display:flex;align-items:center;padding:6px 10px;background:var(--toolbar-bg,#ffffff);border-bottom:1px solid var(--border-color,#e0e0e0);z-index:1000;gap:4px;}
+.qz-footer{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--toolbar-bg,#ffffff);border-top:1px solid var(--border-color,#e0e0e0);z-index:1000;gap:4px;}
+.qz-icon-btn{background:transparent;border:none;color:var(--tint-color,#1a73e8);padding:6px;border-radius:6px;display:flex;justify-content:center;align-items:center;cursor:pointer;font-size:14px;font-weight:600;}
+.qz-footer .qz-icon-btn{flex-direction:column;gap:2px;font-size:10px;padding:4px 6px;flex:1;color:var(--text-muted,#5f6368);}
+.qz-footer .qz-icon-btn svg{width:18px;height:18px;fill:currentColor;}
+.qz-address-bar{flex:1;display:flex;align-items:center;background:var(--bg-color,#f8f9fa);border:1px solid var(--border-color,#e0e0e0);border-radius:18px;padding:0 10px;height:34px;position:relative;}
+.qz-address-bar input{flex:1;border:none;background:transparent;color:var(--text-color,#202124);font-size:13px;outline:none;padding:0 6px;text-align:center;}
+.qz-address-bar input:focus{text-align:left;}
+.qz-progress-line{position:absolute;bottom:0;left:0;height:2px;background:var(--tint-color,#1a73e8);width:0%;transition:width 0.25s ease-out;border-radius:0 0 18px 18px;opacity:0;}
+.qz-main{flex:1;position:relative;background:var(--bg-color,#f8f9fa);overflow:hidden;}
+.qz-frames-container{position:absolute;inset:0;z-index:10;pointer-events:none;}
+.qz-frames-container iframe{width:100%;height:100%;border:none;background:var(--card-bg,#ffffff);display:none;position:absolute;inset:0;}
+.qz-frames-container iframe.active{display:block;pointer-events:auto;}
+.qz-home-view{position:absolute;inset:0;z-index:20;overflow-y:auto;padding:22px 20px 30px;display:flex;flex-direction:column;align-items:center;}
+.qz-brand-logo{width:58px;height:58px;display:block;margin-bottom:12px;}
+.qz-greeting{font-size:23px;font-weight:700;margin-top:2px;margin-bottom:10px;text-align:center;}
+.qz-network-badge{display:inline-flex;align-items:center;gap:6px;background:var(--card-bg,#ffffff);border:1px solid var(--border-color,#e0e0e0);padding:5px 12px;border-radius:16px;font-size:12px;color:var(--text-muted,#5f6368);margin-bottom:18px;cursor:pointer;}
+.qz-home-search{width:100%;max-width:640px;display:flex;align-items:center;background:var(--card-bg,#ffffff);border:1px solid var(--border-color,#e0e0e0);border-radius:30px;padding:0 22px;height:58px;box-shadow:0 1px 2px rgba(0,0,0,0.05);margin-bottom:22px;}
+.qz-home-search svg{margin-right:14px;flex-shrink:0;fill:var(--text-muted,#5f6368);width:22px;height:22px;}
+.qz-home-search input{flex:1;border:none;background:transparent;color:var(--text-color,#202124);font-size:16.5px;outline:none;}
+.qz-api-dashboard{width:100%;max-width:640px;margin-bottom:12px;}
+.qz-api-card{background:var(--card-bg,#ffffff);border:1px solid var(--border-color,#e0e0e0);border-radius:14px;padding:14px 18px;}
+.qz-bottom-search{flex:2;min-width:120px;display:flex;align-items:center;background:var(--bg-color,#f8f9fa);border:1px solid var(--border-color,#e0e0e0);border-radius:16px;padding:0 10px;height:32px;margin:0 4px;}
+.qz-bottom-search input{flex:1;border:none;background:transparent;color:var(--text-color,#202124);font-size:12px;outline:none;text-align:center;}
 </style>
 </head>
 <body>
 
-<div id="top-tabs-bar">
-  <div id="tabs-container" style="display:flex; gap:4px; flex:1; overflow-x:auto; scrollbar-width:none;"></div>
-  <button class="new-tab-btn" onclick="createNewTab()" title="新标签页">+</button>
+<!-- 1. 锁屏界面 -->
+<div id="lock-screen">
+  <div style="text-align:center;">
+    <div class="lock-time" id="lock-time">00:00</div>
+    <div class="lock-date" id="lock-date">1月1日 星期一</div>
+  </div>
+  <div class="lock-bottom" onclick="unlockScreen()">
+    <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    <span style="font-size:14px;opacity:0.8;">点击解锁</span>
+  </div>
 </div>
 
-<header>
-  <button class="icon-btn" id="back-btn" onclick="goBack()" disabled><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-  <button class="icon-btn" id="forward-btn" onclick="goForward()" disabled><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
-  <div class="address-bar" id="address-wrap">
-    <div class="progress-line" id="progress"></div>
-    <input type="text" id="url-input" placeholder="搜索或输入网址" autocomplete="off" autocapitalize="off" enterkeyhint="go" onkeydown="handleKeyDown(event)" data-i18n-placeholder="searchPlaceholder">
+<!-- 2. 登录界面 -->
+<div id="login-screen" class="hide">
+  <div class="login-avatar" id="login-avatar">U</div>
+  <div class="login-name" id="login-name">欢迎</div>
+  <div class="login-box">
+    <input type="text" id="login-input" placeholder="输入用户名..." value="Administrator">
+    <button onclick="doLogin()">进入系统</button>
   </div>
-  <button class="icon-btn" id="reload-btn" onclick="reloadPage()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/></svg></button>
-  <button class="icon-btn" id="settings-btn" onclick="toggleSettingsView(true)">⚙️</button>
-  <button class="icon-btn" id="theme-btn" onclick="toggleTheme()">🌓</button>
-</header>
+</div>
 
-<main>
-  <div id="home-view">
-    <div class="brand-logo-wrap">
-      <!-- 直接内联 SVG，防止 PWA 下 use 标签加载失败 -->
-      <svg class="brand-logo" viewBox="0 0 64 64">
-        <rect width="64" height="64" rx="14" fill="#3b7df0"></rect>
-        <path d="M32 12 L48 37 L36 51 L36 39 L15 39 Z" fill="#ffffff"></path>
-      </svg>
-    </div>
-    <div class="greeting" id="greeting-text">下午好</div>
-    <div class="network-badge" id="network-badge" onclick="copyIP()"><span>🌐</span><span id="network-location" data-i18n="locating">定位中...</span></div>
+<!-- 3. 桌面 -->
+<div id="desktop" class="hide">
+  <div id="desk-icons"></div>
+  <div id="win-layer"></div>
 
-    <div class="home-google-search">
-      <svg focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
-        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"></path>
-      </svg>
-      <input type="text" id="home-search-input" placeholder="在轻舟中搜索..." onkeydown="handleHomeKeyDown(event)" autocomplete="off" autocapitalize="off" enterkeyhint="search" data-i18n-placeholder="homeSearchPlaceholder">
-    </div>
-
-    <div class="api-dashboard" id="api-dashboard">
-      <div class="api-card">
-        <div class="api-card-title"><span data-i18n="weatherTitle">📍 本地天气</span><span id="weather-city" style="font-size:10px;" data-i18n="locating">定位中...</span></div>
-        <div class="weather-info">
-          <div class="weather-temp" id="weather-temp">--°</div>
-          <div class="weather-desc">
-            <div id="weather-desc-text" data-i18n="loading">加载中</div>
-            <div id="weather-wind" style="font-size:10px; color:var(--text-muted);">--</div>
-          </div>
-        </div>
-      </div>
+  <div id="start-menu" class="pop">
+    <div class="sm-grid" id="sm-grid"></div>
+    <div class="sm-foot">
+      <button class="sm-user" id="sm-user">
+        <div class="avatar" id="sm-avatar">A</div>
+        <span id="sm-uname">Administrator</span>
+      </button>
+      <button class="sm-power" id="sm-power" title="锁屏">
+        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v9"/><path d="M6.5 6.5a8 8 0 1 0 11 0"/></svg>
+      </button>
     </div>
   </div>
 
-  <div id="frames-container"></div>
-
-  <div id="panel-view" class="overlay-panel">
-    <div class="panel-header"><span id="panel-title">收藏夹</span><button class="icon-btn" onclick="togglePanel(false)">关闭</button></div>
-    <div class="panel-content" id="panel-content"></div>
+  <div id="quick-panel" class="pop">
+    <div class="qs-grid">
+      <button class="qs-tile on" onclick="this.classList.toggle('on')"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 19.5a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2zm4.2-4.6a6 6 0 0 0-8.4 0l1.3 1.4a4 4 0 0 1 5.8 0l1.3-1.4zm3-3.1a10.2 10.2 0 0 0-14.4 0l1.3 1.4a8.2 8.2 0 0 1 11.8 0l1.3-1.4z"/></svg>Wi-Fi</button>
+      <button class="qs-tile" onclick="this.classList.toggle('on')"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.7 6.3a8 8 0 0 1 0 11.4l-1.4-1.4a6 6 0 0 0 0-8.6l1.4-1.4zM12 2a10 10 0 0 1 7.1 2.9l-1.4 1.4A8 8 0 0 0 12 4V2zm-5.7 4.3 1.4 1.4a6 6 0 0 0 0 8.6l-1.4 1.4a8 8 0 0 1 0-11.4zM12 22a10 10 0 0 1-7.1-2.9l1.4-1.4A8 8 0 0 0 12 20v2z"/></svg>蓝牙</button>
+      <button class="qs-tile" onclick="this.classList.toggle('on'); document.documentElement.setAttribute('data-theme', this.classList.contains('on')?'light':'dark')"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-16v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M19.1 4.9l-2.1 2.1M7 17l-2.1 2.1"/></svg>主题</button>
+    </div>
+    <div class="qs-slider"><span>音量</span><input type="range" min="0" max="100" value="60" oninput="this.nextElementSibling.textContent=this.value+'%'"><span>60%</span></div>
+    <div class="qs-slider"><span>亮度</span><input type="range" min="20" max="100" value="100" oninput="this.nextElementSibling.textContent=this.value+'%'"><span>100%</span></div>
   </div>
 
-  <div id="settings-view" class="overlay-panel">
-    <div class="panel-header"><span data-i18n="settings">设置</span><button class="icon-btn" onclick="toggleSettingsView(false)">完成</button></div>
-    <div class="panel-content">
-      <div class="setting-group">
-        <div class="setting-item"><span data-i18n="language">语言 / Language</span><select id="lang-select" onchange="applyLanguage(this.value)"><option value="auto">自动（跟随网络/IP环境）</option><option value="zh">简体中文</option><option value="en">English</option></select></div>
-        <div class="setting-item"><span data-i18n="theme">主题</span><select id="theme-select" onchange="setTheme(this.value)"><option value="auto">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></div>
-      </div>
-      <button class="clear-all-btn" onclick="clearData()" data-i18n="clearData">清除所有数据</button>
-      <div style="text-align:center;color:var(--text-muted);font-size:12px;margin-top:20px;">轻舟 v1.6</div>
+  <div id="taskbar">
+    <div id="tb-center">
+      <button class="tb-btn start-btn" id="tb-start" title="开始">
+        <svg class="ic" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="var(--acc)"/><path d="M12 4 L18 14 L13.4 19.6 L13.4 14.8 L5.6 14.8 Z" fill="#fff"/></svg>
+      </button>
+      <div id="tb-apps"></div>
+    </div>
+    <div id="tb-right">
+      <button class="tray-btn" id="tb-quick" title="快捷设置">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 19.5a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2zm4.2-4.6a6 6 0 0 0-8.4 0l1.3 1.4a4 4 0 0 1 5.8 0l1.3-1.4zm3-3.1a10.2 10.2 0 0 0-14.4 0l1.3 1.4a8.2 8.2 0 0 1 11.8 0l1.3-1.4z"/></svg>
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M3 10v4h3.5L11 18V6L6.5 10H3zm12.5 2a4.4 4.4 0 0 0-2.5-4v8a4.4 4.4 0 0 0 2.5-4z"/></svg>
+      </button>
+      <button class="tray-btn" id="tb-clock" title="日期和时间">
+        <span class="t1" id="tc-t">--:--</span>
+        <span class="t2" id="tc-d">--/--</span>
+      </button>
     </div>
   </div>
-</main>
 
-<footer>
-  <button class="icon-btn" onclick="togglePanel('bookmarks')"><svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg><span data-i18n="bookmarks">书签</span></button>
-  <button class="icon-btn" onclick="togglePanel('history')"><svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg><span data-i18n="history">历史</span></button>
-  <div class="bottom-search-bar"><input type="text" id="bottom-search-input" placeholder="在网页中搜索..." onkeydown="handleBottomKeyDown(event)" autocomplete="off" data-i18n-placeholder="bottomSearchPlaceholder"></div>
-  <button class="icon-btn" onclick="showHome()"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span data-i18n="home">主页</span></button>
-</footer>
+  <div id="ctx-menu">
+    <button class="ctx-item" onclick="newWindowFromCtx()" id="ctx-new">新建窗口</button>
+    <button class="ctx-item" onclick="closeWindowFromCtx()" id="ctx-close">关闭窗口</button>
+  </div>
+  <div id="toasts"></div>
+</div>
 
 <script>
-"use strict";
+// ================= 基础工具 =================
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+let currentUser = localStorage.getItem('qzos_user') || '';
 
-/* ==================== i18n ==================== */
-var i18n = {
-  zh: {
-    appTitle: "轻舟", searchPlaceholder: "搜索或输入网址",
-    homeSearchPlaceholder: "在轻舟中搜索...", bottomSearchPlaceholder: "在网页中搜索...",
-    bookmarks: "书签", history: "历史", home: "主页", settings: "设置",
-    theme: "主题", language: "语言 / Language", clearData: "清除所有数据",
-    alertClearData: "确定要清除本设备上的所有数据吗？",
-    networkLocation: "网络环境", locating: "定位中...", networkFail: "获取失败",
-    weatherTitle: "📍 本地天气", loading: "加载中", windSpeed: "风速: ", weatherFail: "天气加载失败",
-    greetingMorning: "早上好", greetingAfternoon: "下午好", greetingEvening: "晚上好", greetingReady: "，准备探索世界？",
-    ipCopied: "已复制 IP：", newTab: "起始页", noRecords: "暂无记录（本设备本地独立隔离）", local: "本地"
-  },
-  en: {
-    appTitle: "Light Boat", searchPlaceholder: "Search or enter address",
-    homeSearchPlaceholder: "Search in Light Boat...", bottomSearchPlaceholder: "Search the web...",
-    bookmarks: "Bookmarks", history: "History", home: "Home", settings: "Settings",
-    theme: "Theme", language: "Language / 语言", clearData: "Clear All Data",
-    alertClearData: "Are you sure you want to clear all data on this device?",
-    networkLocation: "Network", locating: "Detecting...", networkFail: "Failed",
-    weatherTitle: "📍 Local Weather", loading: "Loading", windSpeed: "Wind: ", weatherFail: "Failed to load weather",
-    greetingMorning: "Good morning", greetingAfternoon: "Good afternoon", greetingEvening: "Good evening", greetingReady: ", ready to explore?",
-    ipCopied: "IP copied: ", newTab: "New Tab", noRecords: "No records yet (isolated to this device)", local: "Local"
+function updateClock() {
+  const now = new Date();
+  const tStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+  const dStr = `${now.getMonth() + 1}月${now.getDate()}日 星期${['日','一','二','三','四','五','六'][now.getDay()]}`;
+  
+  const lt = $('#lock-time'), ld = $('#lock-date');
+  if (lt) lt.textContent = tStr;
+  if (ld) ld.textContent = dStr;
+  
+  const tc = $('#tc-t'), td = $('#tc-d');
+  if (tc) tc.textContent = tStr;
+  if (td) td.textContent = `${now.getMonth() + 1}/${now.getDate()}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+function notify(title, desc) {
+  const box = $('#toasts');
+  if (!box) return;
+  const t = document.createElement('div');
+  t.className = 'toast'; t.innerHTML = `<b>${title}</b><p>${desc}</p>`;
+  box.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ================= 1. 锁屏与登录 =================
+function unlockScreen() {
+  $('#lock-screen').classList.add('unlocked');
+  setTimeout(() => {
+    $('#lock-screen').classList.add('hide');
+    if (currentUser) {
+      startDesktop();
+    } else {
+      $('#login-screen').classList.remove('hide');
+      $('#login-input').focus();
+    }
+  }, 600);
+}
+
+function doLogin() {
+  const u = $('#login-input').value.trim() || 'Administrator';
+  currentUser = u;
+  localStorage.setItem('qzos_user', u);
+  $('#login-screen').classList.add('hide-login');
+  setTimeout(() => {
+    $('#login-screen').classList.add('hide');
+    startDesktop();
+  }, 500);
+}
+
+$('#login-input')?.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function lockScreen() {
+  $('#lock-screen').classList.remove('hide', 'unlocked');
+  setTimeout(() => $('#lock-screen').classList.remove('unlocked'), 50);
+}
+
+// ================= 2. 虚拟文件系统 (VFS) =================
+let VFS = null;
+function initVFS() {
+  const saved = localStorage.getItem('qzos_vfs');
+  if (saved) { VFS = JSON.parse(saved); } 
+  else {
+    VFS = { id: 'root', name: '此电脑', type: 'folder', children: [
+      { id: 'desktop', name: '桌面', type: 'folder', children: [] },
+      { id: 'documents', name: '文档', type: 'folder', children: [
+        { id: 'readme', name: '欢迎使用.txt', type: 'file', content: '欢迎使用轻舟 OS！\n\n您可以在此电脑中新建、重命名或删除文件。' }
+      ]},
+      { id: 'downloads', name: '下载', type: 'folder', children: [] },
+      { id: 'pictures', name: '图片', type: 'folder', children: [] }
+    ]};
+    saveVFS();
   }
+}
+function saveVFS() { localStorage.setItem('qzos_vfs', JSON.stringify(VFS)); }
+function findNode(id, node = VFS) {
+  if (node.id === id) return node;
+  if (node.children) for (let c of node.children) { const res = findNode(id, c); if (res) return res; }
+  return null;
+}
+function addNode(pid, name, type) {
+  const p = findNode(pid); if (!p) return false;
+  p.children.push({ id: 'n_' + Date.now(), name, type, children: type === 'folder' ? [] : undefined, content: type === 'file' ? '' : undefined });
+  saveVFS(); return true;
+}
+function deleteNode(id) {
+  function rm(node) {
+    if (node.children) {
+      const idx = node.children.findIndex(c => c.id === id);
+      if (idx !== -1) { node.children.splice(idx, 1); return true; }
+      for (let c of node.children) if (rm(c)) return true;
+    }
+    return false;
+  }
+  if (rm(VFS)) { saveVFS(); return true; } return false;
+}
+
+// ================= 3. 应用定义 =================
+const apps = {
+  explorer: { name: '此电脑', icon: `<svg viewBox="0 0 24 24" fill="#ffca28"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M2 8h20" stroke="#d4a015" stroke-width="2"/><rect x="6" y="12" width="12" height="2" fill="#fff"/></svg>` },
+  browser: { name: '轻舟浏览器', icon: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#3b7df0"/><path d="M32 12 L48 37 L36 51 L36 39 L15 39 Z" fill="#ffffff"/></svg>` },
+  weather: { name: '天气', icon: `<svg viewBox="0 0 24 24" fill="#00a4ef"><circle cx="12" cy="12" r="5"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="#00a4ef" stroke-width="2"/></svg>` },
+  settings: { name: '设置', icon: `<svg viewBox="0 0 24 24" fill="#6b7280"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="none" stroke="#fff" stroke-width="2"/></svg>` },
+  calc: { name: '计算器', icon: `<svg viewBox="0 0 24 24" fill="#374151"><rect x="4" y="2" width="16" height="20" rx="2"/><rect x="6" y="4" width="12" height="4" fill="#9ee7ff"/></svg>` },
+  notepad: { name: '记事本', icon: `<svg viewBox="0 0 24 24" fill="#fff"><rect x="4" y="2" width="16" height="20" rx="2" stroke="#ccc"/><path d="M8 8h8M8 12h8M8 16h8" stroke="#0078d4" stroke-width="2"/></svg>` },
+  terminal: { name: '终端', icon: `<svg viewBox="0 0 24 24" fill="#101418"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 12l4 4m0-8l-4 4" stroke="#4cc2ff" stroke-width="2"/></svg>` },
+  paint: { name: '画图', icon: `<svg viewBox="0 0 24 24" fill="#e8eef7"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/><circle cx="8" cy="10" r="2" fill="#e5484d"/><circle cx="16" cy="10" r="2" fill="#3aa0ff"/></svg>` },
+  photos: { name: '照片', icon: `<svg viewBox="0 0 24 24" fill="#3f7ad6"><rect x="2" y="4" width="20" height="16" rx="2"/><circle cx="8" cy="10" r="2" fill="#ffd166"/><path d="M4 18l6-6 4 4 4-4 6 6z" fill="#eaf2ff"/></svg>` }
 };
 
-var currentLangSetting = 'auto';
-try { currentLangSetting = localStorage.getItem('qz_lang') || 'auto'; } catch (e) {}
-var currentLang = 'en';
-function t(key) { return (i18n[currentLang] && i18n[currentLang][key]) || key; }
+// ================= 4. 桌面与开始菜单 =================
+function startDesktop() {
+  initVFS();
+  $('#desktop').classList.remove('hide');
+  
+  const desk = $('#desk-icons'); desk.innerHTML = '';
+  ['explorer', 'browser', 'weather', 'settings', 'calc', 'notepad', 'terminal', 'paint', 'photos'].forEach(key => {
+    const div = document.createElement('div'); div.className = 'desk-ic';
+    div.innerHTML = `<div class="ic">${apps[key].icon}</div><span>${apps[key].name}</span>`;
+    div.ondblclick = () => openApp(key);
+    div.onclick = () => openApp(key);
+    desk.appendChild(div);
+  });
+  
+  const grid = $('#sm-grid'); grid.innerHTML = '';
+  Object.keys(apps).forEach(key => {
+    const div = document.createElement('div'); div.className = 'sm-app';
+    div.innerHTML = `<div class="ic">${apps[key].icon}</div><span>${apps[key].name}</span>`;
+    div.onclick = () => { togglePanel('start-menu', false); openApp(key); };
+    grid.appendChild(div);
+  });
+  
+  $('#sm-uname').textContent = currentUser;
+  $('#sm-avatar').textContent = currentUser.charAt(0).toUpperCase();
 
-/* ==================== 主题 ==================== */
-var themeSetting = 'auto';
-try { themeSetting = localStorage.getItem('qz_theme') || 'auto'; } catch (e) {}
-var systemDark = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  renderTaskbarApps();
+}
 
-function applyThemeToDOM() {
-  try {
-    var actual = themeSetting === 'auto' ? (systemDark ? 'dark' : 'light') : themeSetting;
-    document.documentElement.setAttribute('data-theme', actual);
-    var sel = document.getElementById('theme-select');
-    if (sel) sel.value = themeSetting;
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', actual === 'dark' ? '#000000' : '#f2f2f7');
-  } catch (e) {}
+// ================= 5. 窗口系统 =================
+let zIndex = 100, winIdCounter = 0, currentCtxAppId = null;
+const openWindows = {};
+
+function openApp(appId) {
+  const id = appId + '_' + (++winIdCounter);
+  const win = document.createElement('div');
+  win.className = 'win'; win.id = id;
+  win.style.width = '850px'; win.style.height = '560px';
+  win.style.top = '40px'; win.style.left = Math.max(20, (window.innerWidth - 850) / 2) + 'px';
+  win.style.zIndex = ++zIndex;
+
+  const header = document.createElement('div'); header.className = 'win-tb';
+  header.innerHTML = `
+    <div class="win-tb-icon">${apps[appId].icon}</div>
+    <div class="win-tb-title">${apps[appId].name}</div>
+    <div class="win-ctrl">
+      <button onclick="minimizeWin('${id}')" title="最小化"><svg viewBox="0 0 10 10"><path d="M1 5h8"/></svg></button>
+      <button onclick="maximizeWin('${id}')" title="最大化"><svg viewBox="0 0 10 10"><rect x="1.2" y="1.2" width="7.6" height="7.6"/></svg></button>
+      <button class="close-btn" onclick="closeWin('${id}')" title="关闭"><svg viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7"/></svg></button>
+    </div>`;
+  win.appendChild(header);
+
+  const body = document.createElement('div'); body.className = 'win-body'; win.appendChild(body);
+  $('#win-layer').appendChild(win);
+  makeDraggable(win, header);
+  win.onmousedown = () => { win.style.zIndex = ++zIndex; };
+
+  openWindows[id] = { appId, el: win, isMinimized: false };
+  renderAppContent(appId, body, id);
+  renderTaskbarApps();
 }
-function setTheme(val) {
-  themeSetting = val;
-  try { localStorage.setItem('qz_theme', val); } catch (e) {}
-  applyThemeToDOM();
+
+function renderAppContent(appId, container, winId) {
+  if (appId === 'explorer') {
+    container.innerHTML = `
+      <div class="explorer">
+        <div class="ex-side">
+          <button class="ex-item on" onclick="navFolder('${winId}', 'root')">此电脑</button>
+          <button class="ex-item" onclick="navFolder('${winId}', 'desktop')">桌面</button>
+          <button class="ex-item" onclick="navFolder('${winId}', 'documents')">文档</button>
+          <button class="ex-item" onclick="navFolder('${winId}', 'downloads')">下载</button>
+          <button class="ex-item" onclick="navFolder('${winId}', 'pictures')">图片</button>
+        </div>
+        <div class="ex-main">
+          <div class="ex-toolbar">
+            <button class="ex-btn" onclick="navUp('${winId}')">向上</button>
+            <span class="ex-path" id="path-${winId}">此电脑</span>
+            <button class="ex-btn" onclick="newFolder('${winId}')">新建文件夹</button>
+            <button class="ex-btn" onclick="newFile('${winId}')">新建文件</button>
+          </div>
+          <div class="ex-files" id="files-${winId}" oncontextmenu="showFileCtx(event, '${winId}')"></div>
+        </div>
+      </div>`;
+    navFolder(winId, 'root');
+  } 
+  else if (appId === 'settings') {
+    container.innerHTML = `
+      <div class="settings">
+        <div class="st-side" id="st-side">
+          <button class="st-tab on" onclick="showSettingsTab('sys', this)">系统</button>
+          <button class="st-tab" onclick="showSettingsTab('bt', this)">蓝牙和其他设备</button>
+          <button class="st-tab" onclick="showSettingsTab('net', this)">网络和 Internet</button>
+          <button class="st-tab" onclick="showSettingsTab('pers', this)">个性化</button>
+          <button class="st-tab" onclick="showSettingsTab('apps', this)">应用</button>
+          <button class="st-tab" onclick="showSettingsTab('acc', this)">账户</button>
+          <button class="st-tab" onclick="showSettingsTab('time', this)">时间和语言</button>
+          <button class="st-tab" onclick="showSettingsTab('game', this)">游戏</button>
+          <button class="st-tab" onclick="showSettingsTab('acc2', this)">辅助功能</button>
+          <button class="st-tab" onclick="showSettingsTab('priv', this)">隐私和安全性</button>
+          <button class="st-tab" onclick="showSettingsTab('update', this)">Windows 更新</button>
+        </div>
+        <div class="st-main" id="st-main"></div>
+      </div>`;
+    showSettingsTab('sys');
+  }
+  else if (appId === 'browser') {
+    // 渲染全新集成版轻舟浏览器
+    container.innerHTML = `
+      <div class="qz-browser-wrap" id="qz-browser-${winId}">
+        <div class="qz-top-tabs-bar">
+          <div id="qz-tabs-container-${winId}" style="display:flex; gap:4px; flex:1; overflow-x:auto; scrollbar-width:none;"></div>
+          <button class="qz-new-tab-btn" onclick="qzCreateNewTab('${winId}')" title="新标签页">+</button>
+        </div>
+        <div class="qz-header">
+          <button class="qz-icon-btn" id="qz-back-${winId}" onclick="qzGoBack('${winId}')" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="qz-icon-btn" id="qz-forward-${winId}" onclick="qzGoForward('${winId}')" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+          <div class="qz-address-bar" id="qz-address-wrap-${winId}">
+            <div class="qz-progress-line" id="qz-progress-${winId}"></div>
+            <input type="text" id="qz-url-input-${winId}" placeholder="搜索或输入网址" autocomplete="off" onkeydown="qzHandleKeyDown(event, '${winId}')">
+          </div>
+          <button class="qz-icon-btn" onclick="qzReloadPage('${winId}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/></svg></button>
+        </div>
+        <div class="qz-main">
+          <div class="qz-home-view" id="qz-home-view-${winId}">
+            <svg class="qz-brand-logo" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#3b7df0"/><path d="M32 12 L48 37 L36 51 L36 39 L15 39 Z" fill="#ffffff"/></svg>
+            <div class="qz-greeting" id="qz-greeting-${winId}">下午好，准备探索世界？</div>
+            <div class="qz-network-badge" id="qz-network-badge-${winId}" onclick="qzCopyIP('${winId}')"><span>🌐</span><span id="qz-network-location-${winId}">定位中...</span></div>
+            <div class="qz-home-search">
+              <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <input type="text" id="qz-home-search-input-${winId}" placeholder="在轻舟中搜索..." onkeydown="qzHandleHomeKeyDown(event, '${winId}')">
+            </div>
+            <div class="qz-api-dashboard">
+              <div class="qz-api-card">
+                <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:8px;display:flex;justify-content:between;"><span>📍 本地天气</span><span id="qz-weather-city-${winId}" style="font-size:10px;">北京</span></div>
+                <div style="display:flex;align-items:center;gap:12px;">
+                  <div style="font-size:28px;font-weight:700;color:var(--tint-color,#1a73e8);" id="qz-weather-temp-${winId}">--°</div>
+                  <div>
+                    <div id="qz-weather-desc-${winId}" style="font-size:12px;">加载中...</div>
+                    <div id="qz-weather-wind-${winId}" style="font-size:10px;color:var(--text-muted);">--</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="qz-frames-container" id="qz-frames-${winId}"></div>
+        </div>
+        <div class="qz-footer">
+          <button class="qz-icon-btn" onclick="qzShowHome('${winId}')"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>主页</span></button>
+          <div class="qz-bottom-search"><input type="text" id="qz-bottom-search-input-${winId}" placeholder="在网页中搜索..." onkeydown="qzHandleBottomKeyDown(event, '${winId}')"></div>
+        </div>
+      </div>
+    `;
+    initQzBrowserInstance(winId);
+  }
+  else if (appId === 'weather') { renderWeather(container); }
+  else if (appId === 'calc') {
+    container.innerHTML = `
+      <div class="calc">
+        <div class="calc-disp" id="calc-disp-${winId}">0</div>
+        <div class="calc-keys">
+          <button onclick="calcInput('${winId}', 'C')" style="color:#c42b1c">C</button>
+          <button onclick="calcInput('${winId}', 'back')">⌫</button>
+          <button onclick="calcInput('${winId}', '%')">%</button>
+          <button class="op" onclick="calcInput('${winId}', '/')">/</button>
+          <button onclick="calcInput('${winId}', '7')">7</button><button onclick="calcInput('${winId}', '8')">8</button><button onclick="calcInput('${winId}', '9')">9</button><button class="op" onclick="calcInput('${winId}', '*')">*</button>
+          <button onclick="calcInput('${winId}', '4')">4</button><button onclick="calcInput('${winId}', '5')">5</button><button onclick="calcInput('${winId}', '6')">6</button><button class="op" onclick="calcInput('${winId}', '-')">-</button>
+          <button onclick="calcInput('${winId}', '1')">1</button><button onclick="calcInput('${winId}', '2')">2</button><button onclick="calcInput('${winId}', '3')">3</button><button class="op" onclick="calcInput('${winId}', '+')">+</button>
+          <button onclick="calcInput('${winId}', '0')" style="grid-column:span 2">0</button><button onclick="calcInput('${winId}', '.')">.</button><button class="eq" onclick="calcInput('${winId}', '=')">=</button>
+        </div>
+      </div>`;
+  }
+  else if (appId === 'notepad') {
+    const savedNote = localStorage.getItem('qzos_note') || '';
+    container.innerHTML = `<div class="np"><textarea class="np-area" placeholder="在此输入内容，自动保存..." oninput="localStorage.setItem('qzos_note', this.value)">${savedNote}</textarea></div>`;
+  }
+  else if (appId === 'terminal') {
+    container.innerHTML = `<div class="term" id="term-${winId}"><div class="term-line">轻舟 OS 终端 [v1.0]</div><div class="term-in"><span>C:\\></span><input type="text" onkeydown="termInput(event, '${winId}')" autofocus></div></div>`;
+    setTimeout(() => container.querySelector('input')?.focus(), 100);
+  }
+  else if (appId === 'paint') {
+    container.innerHTML = `<div style="height:100%;background:#fff;display:flex;align-items:center;justify-content:center;color:#666;">画图板 (Canvas 待接入)</div>`;
+  }
+  else if (appId === 'photos') {
+    container.innerHTML = `<div style="padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;height:100%;overflow-y:auto;">
+      <div style="background:linear-gradient(45deg,#ff9a9e,#fad0c4);border-radius:8px;"></div>
+      <div style="background:linear-gradient(45deg,#a18cd1,#fbc2eb);border-radius:8px;"></div>
+      <div style="background:linear-gradient(45deg,#84fab0,#8fd3f4);border-radius:8px;"></div>
+      <div style="background:linear-gradient(45deg,#fccb90,#d57eeb);border-radius:8px;"></div>
+      <div style="background:linear-gradient(45deg,#e0c3fc,#8ec5fc);border-radius:8px;"></div>
+      <div style="background:linear-gradient(45deg,#f093fb,#f5576c);border-radius:8px;"></div>
+    </div>`;
+  }
 }
-function toggleTheme() {
-  themeSetting = themeSetting === 'auto' ? (systemDark ? 'light' : 'dark') : (themeSetting === 'light' ? 'dark' : 'light');
-  setTheme(themeSetting);
-}
-if (window.matchMedia) {
-  var mq = window.matchMedia('(prefers-color-scheme: dark)');
-  var onSchemeChange = function (e) {
-    systemDark = e.matches;
-    if (themeSetting === 'auto') applyThemeToDOM();
+
+// ================= 轻舟浏览器实例逻辑 =================
+const qzBrowserInstances = {};
+
+function initQzBrowserInstance(winId) {
+  const instance = {
+    tabs: [{ id: 'tab_init', type: 'home', title: '起始页', url: '', iframe: null, history: [{ type: 'home' }], historyIndex: 0 }],
+    activeTabId: 'tab_init'
   };
-  if (mq.addEventListener) mq.addEventListener('change', onSchemeChange);
-  else if (mq.addListener) mq.addListener(onSchemeChange);
+  qzBrowserInstances[winId] = instance;
+  qzRenderTopTabs(winId);
+  qzSwitchTab(winId, 'tab_init');
+  qzInitWeatherForBrowser(winId);
+  qzInitIpForBrowser(winId);
 }
 
-/* ==================== 网络信息 ==================== */
-var networkInfo = { country: '', countryCode: '', city: '', ip: '', lat: null, lon: null };
-var netPromise = null;
-var netDone = false;
-
-var countryZhMap = { CN: '中国', US: '美国', JP: '日本', KR: '韩国', GB: '英国', FR: '法国', DE: '德国', SG: '新加坡', HK: '中国香港', TW: '中国台湾', MO: '中国澳门', CA: '加拿大', AU: '澳大利亚', IN: '印度', RU: '俄罗斯', BR: '巴西', NL: '荷兰', ES: '西班牙', IT: '意大利', TH: '泰国', MY: '马来西亚', VN: '越南', ID: '印度尼西亚', PH: '菲律宾' };
-var countryEnMap = { CN: 'China', US: 'United States', JP: 'Japan', KR: 'South Korea', GB: 'United Kingdom', FR: 'France', DE: 'Germany', SG: 'Singapore', HK: 'Hong Kong', TW: 'Taiwan', MO: 'Macau', CA: 'Canada', AU: 'Australia', IN: 'India', RU: 'Russia', BR: 'Brazil' };
-
-var tzCountryMap = {
-  'Asia/Shanghai': 'CN', 'Asia/Chongqing': 'CN', 'Asia/Urumqi': 'CN', 'Asia/Harbin': 'CN',
-  'Asia/Taipei': 'TW', 'Asia/Hong_Kong': 'HK', 'Asia/Macau': 'MO', 'Asia/Singapore': 'SG',
-  'Asia/Tokyo': 'JP', 'Asia/Seoul': 'KR', 'Asia/Bangkok': 'TH', 'Asia/Kolkata': 'IN',
-  'Asia/Jakarta': 'ID', 'Asia/Manila': 'PH', 'Asia/Kuala_Lumpur': 'MY', 'Asia/Ho_Chi_Minh': 'VN',
-  'Europe/London': 'GB', 'Europe/Paris': 'FR', 'Europe/Berlin': 'DE', 'Europe/Moscow': 'RU',
-  'Europe/Amsterdam': 'NL', 'Europe/Madrid': 'ES', 'Europe/Rome': 'IT',
-  'America/New_York': 'US', 'America/Chicago': 'US', 'America/Denver': 'US',
-  'America/Los_Angeles': 'US', 'America/Phoenix': 'US', 'America/Toronto': 'CA',
-  'America/Vancouver': 'CA', 'Australia/Sydney': 'AU', 'Australia/Melbourne': 'AU',
-  'Pacific/Auckland': 'NZ', 'America/Sao_Paulo': 'BR'
-};
-
-function getTimezoneCountry() {
-  var tz = '';
-  try { tz = (Intl.DateTimeFormat().resolvedOptions().timeZone) || ''; } catch (e) {}
-  var code = tzCountryMap[tz] || '';
-  if (!code && tz.indexOf('America/') === 0) code = 'US';
-  if (!code && tz.indexOf('Europe/') === 0) code = 'GB';
-  return { tz: tz, code: code };
-}
-
-function getCountryName() {
-  if (currentLang === 'zh') return countryZhMap[networkInfo.countryCode] || networkInfo.country || networkInfo.countryCode || '';
-  return countryEnMap[networkInfo.countryCode] || networkInfo.country || networkInfo.countryCode || '';
-}
-
-function evaluateAutoLanguage() {
-  if (networkInfo.countryCode) return ['CN', 'TW', 'HK', 'SG', 'MO'].indexOf(networkInfo.countryCode) !== -1 ? 'zh' : 'en';
-  var tzc = getTimezoneCountry();
-  if (tzc.code) return ['CN', 'TW', 'HK', 'SG', 'MO'].indexOf(tzc.code) !== -1 ? 'zh' : 'en';
-  return (navigator.language || 'en').toLowerCase().indexOf('zh') === 0 ? 'zh' : 'en';
-}
-
-function fetchJSON(url, ms) {
-  var ctrl = new AbortController();
-  var timer = setTimeout(function () { ctrl.abort(); }, ms || 5000);
-  return fetch(url, { signal: ctrl.signal, cache: 'no-store', referrerPolicy: 'no-referrer' })
-    .then(function (r) {
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    })
-    .finally(function () { clearTimeout(timer); });
-}
-
-function firstSuccess(promises) {
-  return new Promise(function (resolve, reject) {
-    var pending = promises.length, settled = false;
-    if (!pending) return reject(new Error('no sources'));
-    promises.forEach(function (p) {
-      Promise.resolve(p).then(function (v) {
-        if (!settled) { settled = true; resolve(v); }
-      }).catch(function (err) {
-        pending--;
-        if (pending === 0 && !settled) reject(err);
-      });
-    });
+function qzRenderTopTabs(winId) {
+  const inst = qzBrowserInstances[winId];
+  const container = document.getElementById(`qz-tabs-container-${winId}`);
+  if (!container) return;
+  container.innerHTML = '';
+  inst.tabs.forEach(tab => {
+    const el = document.createElement('div');
+    el.className = 'qz-top-tab' + (tab.id === inst.activeTabId ? ' active' : '');
+    el.innerHTML = `<span class="qz-tab-title">${tab.title || '起始页'}</span><button class="qz-close-tab" onclick="event.stopPropagation(); qzCloseTab('${winId}', '${tab.id}')">×</button>`;
+    el.onclick = () => qzSwitchTab(winId, tab.id);
+    container.appendChild(el);
   });
 }
 
-function srcIpwho() { return fetchJSON('https://ipwho.is/', 4000).then(function(d) { if (!d || d.success === false || !d.ip) throw new Error('ipwho'); return { ip: d.ip, country: d.country || '', countryCode: (d.country_code || '').toUpperCase(), city: d.city || '', lat: typeof d.latitude === 'number' ? d.latitude : null, lon: typeof d.longitude === 'number' ? d.longitude : null }; }); }
-function srcIpapi() { return fetchJSON('https://ipapi.co/json/', 4000).then(function(d) { if (!d || d.error || !d.ip) throw new Error('ipapi'); return { ip: d.ip, country: d.country_name || '', countryCode: (d.country_code || '').toUpperCase(), city: d.city || '', lat: typeof d.latitude === 'number' ? d.latitude : null, lon: typeof d.longitude === 'number' ? d.longitude : null }; }); }
-
-function detectNetworkLocation() {
-  if (netPromise) return netPromise;
-  if (netDone && networkInfo.ip) { renderNetworkBadge(); return Promise.resolve(networkInfo); }
-  var loc = document.getElementById('network-location');
-  if (loc && !networkInfo.ip) loc.textContent = t('locating');
-  netPromise = firstSuccess([srcIpwho(), srcIpapi()])
-    .then(function (info) {
-      if (info.ip) networkInfo.ip = info.ip;
-      if (info.country) networkInfo.country = info.country;
-      if (info.countryCode) networkInfo.countryCode = info.countryCode;
-      if (info.city) networkInfo.city = info.city;
-      if (typeof info.lat === 'number' && isFinite(info.lat)) networkInfo.lat = info.lat;
-      if (typeof info.lon === 'number' && isFinite(info.lon)) networkInfo.lon = info.lon;
-      netDone = !!(networkInfo.ip || networkInfo.countryCode);
-      if (currentLangSetting === 'auto') applyLanguage('auto');
-      else renderNetworkBadge();
-      return networkInfo;
-    })
-    .catch(function () {
-      var tzc = getTimezoneCountry();
-      if (!networkInfo.countryCode && tzc.code) {
-        networkInfo.countryCode = tzc.code;
-        if (currentLangSetting === 'auto') { applyLanguage('auto'); return networkInfo; }
-      }
-      renderNetworkBadge();
-      return networkInfo;
-    })
-    .finally(function () { netPromise = null; });
-  return netPromise;
-}
-
-function renderNetworkBadge() {
-  var loc = document.getElementById('network-location');
-  if (!loc) return;
-  var country = getCountryName(), city = networkInfo.city || '', ip = networkInfo.ip || '';
-  if (!country && !city && !ip) {
-    loc.textContent = t('networkLocation') + (currentLang === 'zh' ? '：' : ': ') + t('locating');
-    return;
-  }
-  var parts = [];
-  if (country) parts.push(country);
-  if (city) parts.push(city);
-  if (ip) parts.push(ip);
-  loc.textContent = t('networkLocation') + (currentLang === 'zh' ? '：' : ': ') + parts.join(currentLang === 'zh' ? ' · ' : ', ');
-}
-
-function copyIP() {
-  if (!networkInfo.ip) { detectNetworkLocation(); return; }
-  var done = function () {
-    var loc = document.getElementById('network-location');
-    if (!loc) return;
-    loc.textContent = t('ipCopied') + networkInfo.ip;
-    setTimeout(renderNetworkBadge, 1500);
-  };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(networkInfo.ip).then(done).catch(done);
-  } else { done(); }
-}
-
-/* ==================== 语言 ==================== */
-function applyLanguage(setting) {
-  currentLangSetting = setting;
-  try { localStorage.setItem('qz_lang', setting); } catch (e) {}
-  currentLang = (setting === 'auto') ? evaluateAutoLanguage() : setting;
-  var selectEl = document.getElementById('lang-select');
-  if (selectEl) selectEl.value = setting;
-  document.querySelectorAll('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(function (el) { el.placeholder = t(el.getAttribute('data-i18n-placeholder')); });
-  document.title = t('appTitle');
-  updateGreeting();
-  renderNetworkBadge();
-  renderTopTabs();
-}
-
-function updateGreeting() {
-  var h = new Date().getHours(), key = 'greetingAfternoon';
-  if (h < 12) key = 'greetingMorning'; else if (h >= 18) key = 'greetingEvening';
-  var el = document.getElementById('greeting-text');
-  if (el) el.textContent = t(key) + t('greetingReady');
-}
-
-/* ==================== 天气 ==================== */
-var weatherCodesZh = { 0: '晴', 1: '晴间少云', 2: '多云', 3: '阴', 45: '雾', 48: '雾凇', 51: '小毛毛雨', 53: '毛毛雨', 55: '大毛毛雨', 56: '冻毛毛雨', 57: '强冻毛毛雨', 61: '小雨', 63: '中雨', 65: '大雨', 66: '冻雨', 67: '强冻雨', 71: '小雪', 73: '中雪', 75: '大雪', 77: '米雪', 80: '阵雨', 81: '强阵雨', 82: '暴雨', 85: '阵雪', 86: '强阵雪', 95: '雷阵雨', 96: '雷阵雨伴冰雹', 99: '强雷阵雨伴冰雹' };
-var weatherCodesEn = { 0: 'Clear', 1: 'Mostly Clear', 2: 'Partly Cloudy', 3: 'Overcast', 45: 'Fog', 48: 'Rime Fog', 51: 'Light Drizzle', 53: 'Drizzle', 55: 'Dense Drizzle', 56: 'Freezing Drizzle', 57: 'Freezing Drizzle', 61: 'Light Rain', 63: 'Rain', 65: 'Heavy Rain', 66: 'Freezing Rain', 67: 'Freezing Rain', 71: 'Light Snow', 73: 'Snow', 75: 'Heavy Snow', 77: 'Snow Grains', 80: 'Showers', 81: 'Showers', 82: 'Violent Showers', 85: 'Snow Showers', 86: 'Snow Showers', 95: 'Thunderstorm', 96: 'Thunderstorm + Hail', 99: 'Thunderstorm + Hail' };
-
-var weatherCityName = '', lastWeatherFetch = 0, weatherBusy = false, geoAsked = false;
-
-function fetchWeatherByCoords(lat, lon, cityName) {
-  if (typeof lat !== 'number' || typeof lon !== 'number' || !isFinite(lat) || !isFinite(lon)) return;
-  if (cityName) weatherCityName = cityName;
-  var cityEl = document.getElementById('weather-city');
-  if (cityEl) cityEl.textContent = weatherCityName || t('local');
-  if (weatherBusy) return;
-  weatherBusy = true;
-  var map = currentLang === 'zh' ? weatherCodesZh : weatherCodesEn;
-  var url = 'https://api.open-meteo.com/v1/forecast?latitude=' + lat + '&longitude=' + lon + '&current=temperature_2m,weather_code,wind_speed_10m';
-  fetchJSON(url, 7000)
-    .then(function (data) {
-      if (!data || !data.current) throw new Error('bad weather data');
-      var cw = data.current;
-      document.getElementById('weather-temp').textContent = Math.round(cw.temperature_2m) + '°';
-      document.getElementById('weather-desc-text').textContent = map[cw.weather_code] || (currentLang === 'zh' ? '晴朗' : 'Clear');
-      var wind = (typeof cw.wind_speed_10m === 'number') ? Math.round(cw.wind_speed_10m) : '--';
-      document.getElementById('weather-wind').textContent = t('windSpeed') + wind + ' km/h';
-      lastWeatherFetch = Date.now();
-    })
-    .catch(function () { var d = document.getElementById('weather-desc-text'); if (d) d.textContent = t('weatherFail'); })
-    .finally(function () { weatherBusy = false; });
-}
-
-function refreshWeather() {
-  if (networkInfo.lat !== null && networkInfo.lon !== null) fetchWeatherByCoords(networkInfo.lat, networkInfo.lon);
-  else fetchWeatherByCoords(39.9042, 116.4074, t('local'));
-}
-
-function tryPreciseLocation() {
-  if (geoAsked || !navigator.geolocation) return;
-  geoAsked = true;
-  navigator.geolocation.getCurrentPosition(
-    function (pos) { fetchWeatherByCoords(pos.coords.latitude, pos.coords.longitude); },
-    function () {},
-    { timeout: 8000, maximumAge: 600000, enableHighAccuracy: false }
-  );
-}
-
-function initWeather() {
-  detectNetworkLocation().then(function () {
-    refreshWeather();
-    setTimeout(function () {
-      if (document.hidden) return;
-      if (navigator.permissions && navigator.permissions.query) {
-        navigator.permissions.query({ name: 'geolocation' }).then(function (p) { if (p.state === 'granted') tryPreciseLocation(); }).catch(function () {});
-      }
-    }, 2500);
-  }).catch(function() {});
-}
-
-/* ==================== 标签页与导航 ==================== */
-var tabs = [{ id: 'tab_init', type: 'home', title: '', url: '', iframe: null, history: [{ type: 'home' }], historyIndex: 0 }];
-var activeTabId = 'tab_init';
-
-var $urlInput = document.getElementById('url-input');
-var $framesContainer = document.getElementById('frames-container');
-var $homeView = document.getElementById('home-view');
-var $panelView = document.getElementById('panel-view');
-var $settingsView = document.getElementById('settings-view');
-var $panelTitle = document.getElementById('panel-title');
-var $panelContent = document.getElementById('panel-content');
-var $addressWrap = document.getElementById('address-wrap');
-var $backBtn = document.getElementById('back-btn');
-var $forwardBtn = document.getElementById('forward-btn');
-
-function tabTitle(tab) {
-  if (tab.type === 'home') return t('newTab');
-  return tab.title || t('newTab');
-}
-
-function renderTopTabs() {
-  var container = document.getElementById('tabs-container');
-  var frag = document.createDocumentFragment();
-  tabs.forEach(function (tab) {
-    var el = document.createElement('div');
-    el.className = 'top-tab' + (tab.id === activeTabId ? ' active' : '');
-    el.dataset.id = tab.id;
-    var span = document.createElement('span');
-    span.className = 'tab-title';
-    span.textContent = tabTitle(tab);
-    var close = document.createElement('button');
-    close.className = 'close-tab';
-    close.dataset.id = tab.id;
-    close.textContent = '×';
-    el.appendChild(span);
-    el.appendChild(close);
-    frag.appendChild(el);
-  });
-  container.textContent = '';
-  container.appendChild(frag);
-}
-
-function updateTabActiveStates() {
-  var els = document.querySelectorAll('#tabs-container .top-tab');
-  for (var i = 0; i < els.length; i++) {
-    els[i].classList.toggle('active', els[i].dataset.id === activeTabId);
-  }
-}
-
-(function bindTabsEvents() {
-  var container = document.getElementById('tabs-container');
-  container.addEventListener('click', function (e) {
-    var closeBtn = e.target.closest ? e.target.closest('.close-tab') : null;
-    if (closeBtn) { e.stopPropagation(); closeTab(closeBtn.dataset.id); return; }
-    var tabEl = e.target.closest ? e.target.closest('.top-tab') : null;
-    if (tabEl) switchTab(tabEl.dataset.id);
-  }, { passive: true });
-})();
-
-function applyTabState(tab, state) {
+function qzApplyTabState(winId, tab, state) {
+  const inst = qzBrowserInstances[winId];
   tab.type = state.type;
-  if (state.type === 'url') {
-    tab.url = state.url;
-    if (state.title) tab.title = state.title;
-  }
-  var isHome = state.type === 'home';
-  $homeView.style.display = isHome ? 'flex' : 'none';
+  if (state.type === 'url') { tab.url = state.url; tab.title = state.title; }
+  const isHome = (state.type === 'home');
+  const homeView = document.getElementById(`qz-home-view-${winId}`);
+  if (homeView) homeView.style.display = isHome ? 'flex' : 'none';
 
-  tabs.forEach(function (t) {
+  inst.tabs.forEach(t => {
     if (t.iframe) {
-      var shouldShow = (t.id === activeTabId) && !isHome;
-      if (shouldShow) t.iframe.classList.add('active');
-      else t.iframe.classList.remove('active');
+      const show = (t.id === inst.activeTabId && !isHome);
+      t.iframe.classList.toggle('active', show);
     }
   });
 
+  const urlInput = document.getElementById(`qz-url-input-${winId}`);
   if (!isHome) {
-    var iframe = tab.iframe;
+    let iframe = tab.iframe;
+    const framesContainer = document.getElementById(`qz-frames-${winId}`);
     if (!iframe) {
       iframe = document.createElement('iframe');
-      iframe.id = 'frame_' + tab.id;
-      // PWA 下保持最基础的 sandbox，防止引发内核安全拦截
       iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms allow-popups allow-modals');
       iframe.src = state.url;
-      $framesContainer.appendChild(iframe);
+      framesContainer.appendChild(iframe);
       tab.iframe = iframe;
-    } else if (iframe.dataset.url !== state.url) {
-      iframe.dataset.url = state.url;
+    } else if (iframe.src !== state.url) {
       iframe.src = state.url;
     }
     iframe.classList.add('active');
-    $urlInput.value = state.url;
+    if (urlInput) urlInput.value = state.url;
   } else {
-    $urlInput.value = '';
-    $addressWrap.classList.remove('loading');
+    if (urlInput) urlInput.value = '';
   }
-  updateTabActiveStates();
+  qzRenderTopTabs(winId);
+  qzUpdateNavButtons(winId);
 }
 
-function switchTab(id) {
-  var tab = tabs.find(function (x) { return x.id === id; });
+function qzSwitchTab(winId, tabId) {
+  const inst = qzBrowserInstances[winId];
+  const tab = inst.tabs.find(x => x.id === tabId);
   if (!tab) return;
-  activeTabId = id;
-  var currentState = tab.history[tab.historyIndex] || { type: 'home' };
-  applyTabState(tab, currentState);
-  updateNavButtons();
+  inst.activeTabId = tabId;
+  qzApplyTabState(winId, tab, tab.history[tab.historyIndex]);
 }
 
-function goBack() {
-  var tab = tabs.find(function (x) { return x.id === activeTabId; });
-  if (tab && tab.historyIndex > 0) {
-    tab.historyIndex--;
-    applyTabState(tab, tab.history[tab.historyIndex]);
-    updateNavButtons();
+function qzCreateNewTab(winId) {
+  const inst = qzBrowserInstances[winId];
+  const id = 'tab_' + Date.now();
+  inst.tabs.push({ id, type: 'home', title: '起始页', url: '', iframe: null, history: [{ type: 'home' }], historyIndex: 0 });
+  qzSwitchTab(winId, id);
+}
+
+function qzCloseTab(winId, tabId) {
+  const inst = qzBrowserInstances[winId];
+  const idx = inst.tabs.findIndex(x => x.id === tabId);
+  if (idx === -1) return;
+  if (inst.tabs[idx].iframe) inst.tabs[idx].iframe.remove();
+  inst.tabs.splice(idx, 1);
+  if (inst.tabs.length === 0) { qzCreateNewTab(winId); return; }
+  if (inst.activeTabId === tabId) {
+    inst.activeTabId = inst.tabs[Math.max(0, idx - 1)].id;
   }
+  qzSwitchTab(winId, inst.activeTabId);
 }
 
-function goForward() {
-  var tab = tabs.find(function (x) { return x.id === activeTabId; });
-  if (tab && tab.historyIndex < tab.history.length - 1) {
-    tab.historyIndex++;
-    applyTabState(tab, tab.history[tab.historyIndex]);
-    updateNavButtons();
+function qzNavigate(winId, inputVal) {
+  const q = String(inputVal || '').trim();
+  if (!q) return;
+  let url = q;
+  if (/^(https?:\/\/)?([\w\-]+\.)+[a-z]{2,}(:\d+)?(\/.*)?$/i.test(q) && !q.includes(' ')) {
+    url = /^https?:\/\//i.test(q) ? q : 'https://' + q;
+  } else {
+    url = 'https://www.bing.com/search?q=' + encodeURIComponent(q);
   }
-}
-
-function updateNavButtons() {
-  var tab = tabs.find(function (x) { return x.id === activeTabId; });
+  const inst = qzBrowserInstances[winId];
+  const tab = inst.tabs.find(x => x.id === inst.activeTabId);
   if (!tab) return;
-  $backBtn.disabled = (tab.historyIndex <= 0);
-  $forwardBtn.disabled = (tab.historyIndex >= tab.history.length - 1);
+  const state = { type: 'url', url, title: q.slice(0, 30) };
+  tab.history = tab.history.slice(0, tab.historyIndex + 1);
+  tab.history.push(state);
+  tab.historyIndex = tab.history.length - 1;
+  qzApplyTabState(winId, tab, state);
 }
 
-function createNewTab() {
-  if (tabs.length >= 10) {
-    var victim = tabs.find(function (x) { return x.id !== activeTabId; });
-    if (victim) {
-      if (victim.iframe) { victim.iframe.remove(); victim.iframe = null; }
-      tabs.splice(tabs.indexOf(victim), 1);
-    }
-  }
-  var id = 'tab_' + Date.now() + '_' + Math.floor(Math.random() * 1000);
-  tabs.push({ id: id, type: 'home', title: '', url: '', iframe: null, history: [{ type: 'home' }], historyIndex: 0 });
-  activeTabId = id;
-  renderTopTabs();
-  switchTab(id);
-}
+function qzHandleKeyDown(e, winId) { if (e.key === 'Enter') { qzNavigate(winId, e.target.value); e.target.blur(); } }
+function qzHandleHomeKeyDown(e, winId) { if (e.key === 'Enter') { qzNavigate(winId, e.target.value); e.target.value = ''; e.target.blur(); } }
+function qzHandleBottomKeyDown(e, winId) { if (e.key === 'Enter') { qzNavigate(winId, e.target.value); e.target.value = ''; e.target.blur(); } }
 
-function closeTab(id) {
-  var index = tabs.findIndex(function (x) { return x.id === id; });
-  if (index === -1) return;
-  if (tabs[index].iframe) { tabs[index].iframe.remove(); tabs[index].iframe = null; }
-  tabs.splice(index, 1);
-  if (tabs.length === 0) { createNewTab(); return; }
-  if (activeTabId === id) activeTabId = tabs[Math.max(0, index - 1)].id;
-  renderTopTabs();
-  switchTab(activeTabId);
-}
-
-/* ==================== 搜索与导航 ==================== */
-function normalizeUrl(input) {
-  var q = String(input || '').trim();
-  if (!q) return '';
-  if (/^(https?:\/\/)?([\w\-]+\.)+[a-z]{2,}(:\d+)?(\/.*)?$/i.test(q) && q.indexOf(' ') === -1) {
-    return /^https?:\/\//i.test(q) ? q : 'https://' + q;
-  }
-  // 使用国外版 Bing
-  return 'https://www.bing.com/search?q=' + encodeURIComponent(q);
-}
-
-function processNavigationInCurrentTab(input, isHistoryAction) {
-  var processedUrl = normalizeUrl(input);
-  if (!processedUrl) return;
-  var tab = tabs.find(function (x) { return x.id === activeTabId; });
-  if (!tab) return;
-  var title = String(input || '').trim().slice(0, 60);
-  if (!title) { try { title = new URL(processedUrl).hostname; } catch (e) { title = processedUrl.slice(0, 60); } }
-  var stateObj = { type: 'url', url: processedUrl, title: title };
-  if (!isHistoryAction) {
-    tab.history = tab.history.slice(0, tab.historyIndex + 1);
-    tab.history.push(stateObj);
-    tab.historyIndex = tab.history.length - 1;
-  }
-  applyTabState(tab, stateObj);
-  updateNavButtons();
-  renderTopTabs();
-}
-
-function handleKeyDown(e) { if (e.key === 'Enter') { processNavigationInCurrentTab(e.target.value, false); e.target.blur(); } }
-function handleHomeKeyDown(e) { if (e.key === 'Enter') { var v = e.target.value; processNavigationInCurrentTab(v, false); e.target.value = ''; e.target.blur(); } }
-function handleBottomKeyDown(e) { if (e.key === 'Enter') { var v = e.target.value; processNavigationInCurrentTab(v, false); e.target.value = ''; e.target.blur(); } }
-
-function showHome() {
-  var tab = tabs.find(function (x) { return x.id === activeTabId; });
+function qzShowHome(winId) {
+  const inst = qzBrowserInstances[winId];
+  const tab = inst.tabs.find(x => x.id === inst.activeTabId);
   if (!tab) return;
   tab.history = [{ type: 'home' }];
   tab.historyIndex = 0;
-  tab.title = '';
-  applyTabState(tab, { type: 'home' });
-  updateNavButtons();
-  renderTopTabs();
+  tab.title = '起始页';
+  qzApplyTabState(winId, tab, { type: 'home' });
 }
 
-function reloadPage() {
-  var tab = tabs.find(function (x) { return x.id === activeTabId; });
+function qzReloadPage(winId) {
+  const inst = qzBrowserInstances[winId];
+  const tab = inst.tabs.find(x => x.id === inst.activeTabId);
   if (!tab) return;
-  var state = tab.history[tab.historyIndex];
-  if (state && state.type === 'url' && tab.iframe) {
-    tab.iframe.dataset.url = state.url;
-    tab.iframe.src = state.url;
-  } else {
-    applyTabState(tab, state || { type: 'home' });
+  const state = tab.history[tab.historyIndex];
+  if (state.type === 'url' && tab.iframe) { tab.iframe.src = state.url; }
+  else { qzApplyTabState(winId, tab, state); }
+}
+
+function qzGoBack(winId) {
+  const inst = qzBrowserInstances[winId];
+  const tab = inst.tabs.find(x => x.id === inst.activeTabId);
+  if (tab && tab.historyIndex > 0) { tab.historyIndex--; qzApplyTabState(winId, tab, tab.history[tab.historyIndex]); }
+}
+
+function qzGoForward(winId) {
+  const inst = qzBrowserInstances[winId];
+  const tab = inst.tabs.find(x => x.id === inst.activeTabId);
+  if (tab && tab.historyIndex < tab.history.length - 1) { tab.historyIndex++; qzApplyTabState(winId, tab, tab.history[tab.historyIndex]); }
+}
+
+function qzUpdateNavButtons(winId) {
+  const inst = qzBrowserInstances[winId];
+  const tab = inst.tabs.find(x => x.id === inst.activeTabId);
+  if (!tab) return;
+  const backBtn = document.getElementById(`qz-back-${winId}`);
+  const fwdBtn = document.getElementById(`qz-forward-${winId}`);
+  if (backBtn) backBtn.disabled = (tab.historyIndex <= 0);
+  if (fwdBtn) fwdBtn.disabled = (tab.historyIndex >= tab.history.length - 1);
+}
+
+function qzInitWeatherForBrowser(winId) {
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=39.9042&longitude=116.4074&current=temperature_2m,weather_code,wind_speed_10m')
+    .then(res => res.json())
+    .then(data => {
+      if (data && data.current) {
+        const temp = Math.round(data.current.temperature_2m);
+        const tEl = document.getElementById(`qz-weather-temp-${winId}`);
+        const dEl = document.getElementById(`qz-weather-desc-${winId}`);
+        const wEl = document.getElementById(`qz-weather-wind-${winId}`);
+        if (tEl) tEl.textContent = temp + '°';
+        if (dEl) dEl.textContent = temp < 10 ? '较冷，注意保暖' : '天气舒适';
+        if (wEl) wEl.textContent = '风速: ' + data.current.wind_speed_10m + ' km/h';
+      }
+    }).catch(() => {});
+}
+
+function qzInitIpForBrowser(winId) {
+  fetch('https://ipwho.is/').then(res => res.json()).then(data => {
+    if (data && data.success && data.ip) {
+      const el = document.getElementById(`qz-network-location-${winId}`);
+      if (el) el.textContent = `${data.country || '中国'} · ${data.city || ''} · ${data.ip}`;
+    }
+  }).catch(() => {});
+}
+
+function qzCopyIP(winId) {
+  const el = document.getElementById(`qz-network-location-${winId}`);
+  if (el) { navigator.clipboard?.writeText(el.textContent); notify('网络', '网络信息已复制'); }
+}
+
+// 计算器逻辑
+function calcInput(winId, val) {
+  const disp = $(`#calc-disp-${winId}`);
+  if (!disp) return;
+  let current = disp.textContent;
+  if (val === 'C') disp.textContent = '0';
+  else if (val === 'back') disp.textContent = current.length > 1 ? current.slice(0, -1) : '0';
+  else if (val === '=') { try { disp.textContent = eval(current.replace('×','*').replace('÷','/')); } catch { disp.textContent = 'Error'; } }
+  else { disp.textContent = current === '0' && val !== '.' ? val : current + val; }
+}
+
+// 终端逻辑
+function termInput(e, winId) {
+  if (e.key !== 'Enter') return;
+  const input = e.target;
+  const cmd = input.value.trim();
+  const term = $(`#term-${winId}`);
+  const line = document.createElement('div');
+  line.className = 'term-line';
+  line.textContent = `C:\\> ${cmd}`;
+  term.insertBefore(line, term.lastElementChild);
+
+  if (cmd) {
+    const res = document.createElement('div');
+    res.className = 'term-line';
+    if (cmd === 'help') res.textContent = '支持的命令: help, whoami, date, echo <msg>, clear';
+    else if (cmd === 'whoami') res.textContent = currentUser;
+    else if (cmd === 'date') res.textContent = new Date().toString();
+    else if (cmd.startsWith('echo ')) res.textContent = cmd.substring(5);
+    else if (cmd === 'clear') { term.innerHTML = ''; }
+    else res.textContent = '未知命令: ' + cmd;
+    if (cmd !== 'clear') term.insertBefore(res, term.lastElementChild);
+  }
+  input.value = '';
+  term.scrollTop = term.scrollHeight;
+}
+
+// ================= 6. 设置面板逻辑 =================
+function showSettingsTab(tabId, btn) {
+  if (btn) {
+    $$('#st-side .st-tab').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+  const main = $('#st-main');
+  if (tabId === 'sys') {
+    main.innerHTML = `
+      <h2 style="margin-top:0;">系统</h2>
+      <div class="st-card">
+        <div class="st-row"><div class="txt"><b>显示</b><small>显示器、亮度、夜间模式</small></div><button class="ex-btn">></button></div>
+        <div class="st-row"><div class="txt"><b>声音</b><small>音量、输出、输入</small></div><button class="ex-btn">></button></div>
+        <div class="st-row"><div class="txt"><b>通知</b><small>来自应用和系统的警报</small></div><button class="ex-btn">></button></div>
+        <div class="st-row"><div class="txt"><b>电源</b><small>睡眠、电池使用情况</small></div><button class="ex-btn">></button></div>
+      </div>
+      <div class="st-card">
+        <div class="st-row"><div class="txt"><b>关于</b><small>设备规格、重命名电脑、系统信息</small></div><span style="font-size:12px;">Qingzhou OS 1.0</span></div>
+      </div>
+    `;
+  } else if (tabId === 'bt') {
+    main.innerHTML = `<h2 style="margin-top:0;">蓝牙和其他设备</h2><div class="st-card"><div class="st-row"><div class="txt"><b>蓝牙</b><small>发现并连接附近的设备</small></div><button class="toggle on"></button></div><div class="st-row"><div class="txt"><b>添加设备</b><small>鼠标、键盘、笔、音频</small></div><button class="ex-btn">+ 添加</button></div></div>`;
+  } else if (tabId === 'net') {
+    main.innerHTML = `<h2 style="margin-top:0;">网络和 Internet</h2><div class="st-card"><div class="st-row"><div class="txt"><b>Wi-Fi</b><small>已连接到 Qingzhou-5G</small></div><button class="toggle on"></button></div><div class="st-row"><div class="txt"><b>飞行模式</b><small>停止所有无线通信</small></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div></div>`;
+  } else if (tabId === 'pers') {
+    main.innerHTML = `<h2 style="margin-top:0;">个性化</h2><div class="st-card"><div class="st-row"><div class="txt"><b>背景</b><small>更改桌面背景</small></div><button class="ex-btn">浏览</button></div><div class="st-row"><div class="txt"><b>颜色</b><small>强调色、透明效果</small></div><select class="st-sel"><option>深色</option><option>浅色</option></select></div><div class="st-row"><div class="txt"><b>锁屏界面</b><small>背景、通知</small></div><button class="ex-btn">></button></div></div>`;
+  } else if (tabId === 'apps') {
+    main.innerHTML = `<h2 style="margin-top:0;">应用</h2><div class="st-card"><div class="st-row"><div class="txt"><b>已安装的应用</b><small>浏览器、天气、设置等</small></div><button class="ex-btn">查看</button></div><div class="st-row"><div class="txt"><b>默认应用</b><small>选择默认打开方式</small></div><button class="ex-btn">></button></div><div class="st-row"><div class="txt"><b>启动</b><small>管理开机启动项</small></div><button class="ex-btn">></button></div></div>`;
+  } else if (tabId === 'acc') {
+    main.innerHTML = `<h2 style="margin-top:0;">账户</h2><div class="st-card"><div class="st-row"><div class="txt"><b>${currentUser}</b><small>本地账户</small></div><button class="ex-btn">管理</button></div><div class="st-row"><div class="txt"><b>登录选项</b><small>Windows Hello、PIN</small></div><button class="ex-btn">></button></div></div>`;
+  } else if (tabId === 'time') {
+    main.innerHTML = `<h2 style="margin-top:0;">时间和语言</h2><div class="st-card"><div class="st-row"><div class="txt"><b>日期和时间</b><small>自动设置时间、时区</small></div><button class="toggle on"></button></div><div class="st-row"><div class="txt"><b>语言和区域</b><small>中文（简体，中国）</small></div><button class="ex-btn">></button></div></div>`;
+  } else if (tabId === 'game') {
+    main.innerHTML = `<h2 style="margin-top:0;">游戏</h2><div class="st-card"><div class="st-row"><div class="txt"><b>Xbox Game Bar</b><small>使用 Win+G 打开游戏栏</small></div><button class="toggle on"></button></div><div class="st-row"><div class="txt"><b>游戏模式</b><small>优化游戏体验</small></div><button class="toggle on"></button></div></div>`;
+  } else if (tabId === 'acc2') {
+    main.innerHTML = `<h2 style="margin-top:0;">辅助功能</h2><div class="st-card"><div class="st-row"><div class="txt"><b>文本大小</b><small>调整文本大小</small></div><input type="range" min="100" max="200" value="100"></div><div class="st-row"><div class="txt"><b>视觉效果</b><small>动画、透明效果</small></div><button class="toggle on"></button></div></div>`;
+  } else if (tabId === 'priv') {
+    main.innerHTML = `<h2 style="margin-top:0;">隐私和安全性</h2><div class="st-card"><div class="st-row"><div class="txt"><b>Windows 安全中心</b><small>病毒和威胁防护</small></div><button class="ex-btn">打开</button></div><div class="st-row"><div class="txt"><b>查找我的设备</b><small>跟踪丢失的设备</small></div><button class="toggle on"></button></div></div>`;
+  } else if (tabId === 'update') {
+    main.innerHTML = `<h2 style="margin-top:0;">Windows 更新</h2><div class="st-card"><div class="st-row"><div class="txt"><b>检查更新</b><small>上次检查时间：今天</small></div><button class="ex-btn" style="background:var(--acc);color:#fff;border:none;">立即检查</button></div><div class="st-row"><div class="txt"><b>你的设备已是最新状态</b></div></div></div>`;
   }
 }
 
-/* ==================== 面板 / 设置 ==================== */
-function toggleSettingsView(show) { $settingsView.classList.toggle('show', !!show); }
-function togglePanel(type) {
-  if (!type) { $panelView.classList.remove('show'); return; }
-  $panelView.classList.add('show');
-  $panelTitle.textContent = (type === 'bookmarks') ? t('bookmarks') : t('history');
-  $panelContent.innerHTML = '<p style="text-align:center;color:var(--text-muted);margin-top:40px;">' + t('noRecords') + '</p>';
+// ================= 7. 资源管理器逻辑 =================
+const winStates = {};
+function navFolder(winId, folderId) {
+  if (!winStates[winId]) winStates[winId] = { current: 'root' };
+  winStates[winId].current = folderId;
+  const node = findNode(folderId); if (!node) return;
+  $(`#path-${winId}`).textContent = node.name === '此电脑' ? '此电脑' : '此电脑 > ' + node.name;
+  const filesEl = $(`#files-${winId}`); filesEl.innerHTML = '';
+  
+  if (!node.children || node.children.length === 0) filesEl.innerHTML = '<div class="ex-empty">此文件夹为空</div>';
+  else {
+    node.children.forEach(child => {
+      const div = document.createElement('div'); div.className = 'ex-file';
+      const icon = child.type === 'folder' ? `<svg class="ic" viewBox="0 0 24 24" fill="#ffca28"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M2 8h20" stroke="#d4a015" stroke-width="2"/></svg>` : `<svg class="ic" viewBox="0 0 24 24" fill="#4cc2ff"><path d="M6 2h9l5 5v15H6z"/><path d="M15 2v5h5" fill="#fff"/></svg>`;
+      div.innerHTML = `${icon}<span>${child.name}</span>`;
+      div.ondblclick = () => { if (child.type === 'folder') navFolder(winId, child.id); else alert('文件内容: \n' + (child.content || '')); };
+      div.onclick = (e) => { e.stopPropagation(); $$('.ex-file', filesEl).forEach(el => el.classList.remove('on')); div.classList.add('on'); div.dataset.id = child.id; };
+      filesEl.appendChild(div);
+    });
+  }
 }
-function clearData() { if (confirm(t('alertClearData'))) { try { localStorage.clear(); } catch (e) {} location.reload(); } }
+function navUp(winId) { if (winStates[winId] && winStates[winId].current !== 'root') navFolder(winId, 'root'); }
+function newFolder(winId) { const name = prompt('文件夹名称:', '新建文件夹'); if (name) { const pid = winStates[winId]?.current || 'desktop'; if (addNode(pid, name, 'folder')) navFolder(winId, pid); } }
+function newFile(winId) { const name = prompt('文件名:', '新建文本文档.txt'); if (name) { const pid = winStates[winId]?.current || 'desktop'; if (addNode(pid, name, 'file')) navFolder(winId, pid); } }
+function showFileCtx(e, winId) {
+  e.preventDefault(); const target = e.target.closest('.ex-file'); const menu = $('#ctx-menu');
+  menu.style.left = e.clientX + 'px'; menu.style.top = e.clientY + 'px'; menu.classList.add('open');
+  if (target) {
+    const id = target.dataset.id; $('#ctx-new').style.display = 'none'; $('#ctx-close').textContent = '删除'; $('#ctx-close').style.display = 'block';
+    $('#ctx-close').onclick = () => { if (confirm('确定删除吗？')) { deleteNode(id); navFolder(winId, winStates[winId].current); } $('#ctx-menu').classList.remove('open'); };
+  } else {
+    $('#ctx-new').style.display = 'block'; $('#ctx-new').textContent = '新建文件夹'; $('#ctx-new').onclick = () => { newFolder(winId); $('#ctx-menu').classList.remove('open'); }; $('#ctx-close').style.display = 'none';
+  }
+}
 
-/* ==================== 刷新策略 ==================== */
-function initRefreshPolicy() {
-  setInterval(function () {
-    if (document.hidden) return;
-    if (Date.now() - lastWeatherFetch > 900000) refreshWeather();
-  }, 300000);
-  document.addEventListener('visibilitychange', function () {
-    if (document.hidden) return;
-    if (!networkInfo.ip && !networkInfo.countryCode) detectNetworkLocation();
-    if (Date.now() - lastWeatherFetch > 900000) refreshWeather();
+// ================= 8. 天气应用 =================
+function renderWeather(container) {
+  container.innerHTML = `<div class="weather"><div style="text-align:center;padding:40px;">加载天气中...</div></div>`;
+  fetch('https://wttr.in/Beijing?format=j1').then(res => res.json()).then(data => {
+    const c = data.current_condition[0], today = data.weather[0];
+    let tip = c.temp_C < 10 ? "气温较低，建议穿着厚外套。" : c.temp_C > 28 ? "天气炎热，建议穿着短袖，注意防晒。" : "天气舒适，建议穿着长袖衬衫。";
+    container.innerHTML = `
+      <div class="weather">
+        <div class="w-top"><div class="w-city">北京 <small style="font-size:11px;font-weight:400;opacity:.7;">(实时)</small></div>
+          <div class="w-now"><div class="w-temp">${c.temp_C}°</div><div style="font-size:12px;opacity:.88;line-height:1.6;"><b style="display:block;font-size:14px;">${c.weatherDesc[0].value}</b>体感 ${c.FeelsLikeC}° | ${today.mintempC}° ~ ${today.maxtempC}°</div></div>
+        </div>
+        <div class="w-details">
+          <div class="w-det"><small>湿度</small><b>${c.humidity}%</b></div><div class="w-det"><small>风速</small><b>${c.windKph} km/h</b></div>
+          <div class="w-det"><small>风向</small><b>${c.winddir16Point}</b></div><div class="w-det"><small>气压</small><b>${c.pressure} hPa</b></div>
+        </div>
+        <div class="w-tip"><b>👕 穿衣指数</b><br>${tip}</div>
+      </div>`;
+  }).catch(() => container.innerHTML = `<div class="weather"><div style="color:#ff6b6b;padding:20px;">加载失败，请检查网络</div></div>`);
+}
+
+// ================= 9. 窗口控制与任务栏 =================
+function minimizeWin(id) { const win = openWindows[id]; if (!win) return; win.isMinimized = true; win.el.classList.add('minimized'); renderTaskbarApps(); }
+function maximizeWin(id) { const win = openWindows[id]; if (win) win.el.classList.toggle('max'); }
+function closeWin(id) { const win = openWindows[id]; if (!win) return; win.el.remove(); delete openWindows[id]; renderTaskbarApps(); }
+
+function makeDraggable(win, header) {
+  let p1 = 0, p2 = 0, p3 = 0, p4 = 0;
+  header.onmousedown = (e) => {
+    if (e.target.closest('.win-ctrl')) return; e.preventDefault(); p3 = e.clientX; p4 = e.clientY;
+    document.onmousemove = (ev) => { p1 = p3 - ev.clientX; p2 = p4 - ev.clientY; p3 = ev.clientX; p4 = ev.clientY;
+      if (!win.classList.contains('max')) { win.style.top = (win.offsetTop - p2) + "px"; win.style.left = (win.offsetLeft - p1) + "px"; }
+    };
+    document.onmouseup = () => { document.onmousemove = null; document.onmouseup = null; };
+  };
+}
+
+let longPressTimer = null;
+function renderTaskbarApps() {
+  const container = $('#tb-apps'); container.innerHTML = '';
+  const groups = {};
+  Object.keys(openWindows).forEach(id => { const appId = openWindows[id].appId; if (!groups[appId]) groups[appId] = []; groups[appId].push(id); });
+
+  Object.keys(groups).forEach(appId => {
+    const ids = groups[appId];
+    const btn = document.createElement('button'); btn.className = 'tb-btn active'; btn.innerHTML = apps[appId].icon;
+    const isAllMinimized = ids.every(id => openWindows[id].isMinimized);
+    
+    btn.onclick = (e) => {
+      if (e.target.closest('.ctx-item')) return;
+      if (isAllMinimized) { ids.forEach(id => { openWindows[id].isMinimized = false; openWindows[id].el.classList.remove('minimized'); }); }
+      else { ids.forEach(id => { openWindows[id].isMinimized = true; openWindows[id].el.classList.add('minimized'); }); }
+      renderTaskbarApps();
+    };
+    btn.onmousedown = (e) => { if (e.button !== 0) return; currentCtxAppId = appId; longPressTimer = setTimeout(() => showCtxMenu(e.clientX, e.clientY), 500); };
+    btn.onmouseup = () => clearTimeout(longPressTimer);
+    btn.onmouseleave = () => clearTimeout(longPressTimer);
+    btn.oncontextmenu = (e) => { e.preventDefault(); currentCtxAppId = appId; showCtxMenu(e.clientX, e.clientY); };
+    container.appendChild(btn);
   });
 }
 
-/* ==================== 安全启动 ==================== */
-function safeInit() {
-  try { applyThemeToDOM(); } catch (e) {}
-  try { applyLanguage(currentLangSetting); } catch (e) {}
-  try { renderTopTabs(); } catch (e) {}
-  try { switchTab('tab_init'); } catch (e) {}
-  try { updateNavButtons(); } catch (e) {}
-  try { initWeather(); } catch (e) {}
-  try { initRefreshPolicy(); } catch (e) {}
+function showCtxMenu(x, y) {
+  const menu = $('#ctx-menu'); menu.style.left = x + 'px'; menu.style.top = y + 'px'; menu.classList.add('open');
+  $('#ctx-new').style.display = 'block'; $('#ctx-close').style.display = 'block';
+  $('#ctx-new').onclick = () => { openApp(currentCtxAppId); menu.classList.remove('open'); };
+  $('#ctx-close').onclick = () => { Object.keys(openWindows).forEach(id => { if (openWindows[id].appId === currentCtxAppId) closeWin(id); }); menu.classList.remove('open'); };
 }
-safeInit();
+
+window.addEventListener('mousedown', (e) => {
+  if (!e.target.closest('#ctx-menu')) $('#ctx-menu').classList.remove('open');
+  if (!e.target.closest('#start-menu') && !e.target.closest('#tb-start')) togglePanel('start-menu', false);
+  if (!e.target.closest('#quick-panel') && !e.target.closest('#tb-quick')) togglePanel('quick-panel', false);
+});
+
+function togglePanel(id, force) { const el = $('#' + id); if (force !== undefined) el.classList.toggle('open', force); else el.classList.toggle('open'); }
+
+$('#tb-start').onclick = (e) => { e.stopPropagation(); togglePanel('start-menu'); };
+$('#tb-quick').onclick = (e) => { e.stopPropagation(); togglePanel('quick-panel'); };
+$('#sm-power').onclick = () => { lockScreen(); };
+
+// 初始化
+window.onload = () => {
+  updateClock();
+  if (currentUser) {
+    $('#login-input').value = currentUser;
+    $('#login-avatar').textContent = currentUser.charAt(0).toUpperCase();
+    $('#login-name').textContent = currentUser;
+  }
+};
 </script>
 </body>
 </html>
