@@ -5,196 +5,198 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>轻舟 OS - Web Desktop</title>
 <style>
-/* ================= 全局变量与基础 ================= */
+/* ================= 全局变量与高性能基础 ================= */
 :root{
-  --acc:#0078d4;--acc-fg:#fff;--bg:#f3f3f3;--card:#fff;--pan:rgba(249,249,249,.9);
+  --acc:#0078d4;--acc-fg:#fff;--bg:#f3f3f3;--card:#fff;--pan:rgba(249,249,249,.92);
   --txt:#1a1a1a;--txt2:#5c5c5c;--ln:rgba(0,0,0,.08);--hov:rgba(0,0,0,.05);--hov2:rgba(0,0,0,.1);
-  --tb:rgba(243,243,243,.85);--win:#f9f9f9;--shd:0 18px 44px rgba(0,0,0,.22);--shd-sm:0 4px 14px rgba(0,0,0,.12)
+  --tb:rgba(243,243,243,.85);--win:#f9f9f9;--shd:0 14px 38px rgba(0,0,0,.18);--shd-sm:0 3px 10px rgba(0,0,0,.08)
 }
 [data-theme="dark"]{
-  --bg:#202020;--card:#2b2b2b;--pan:rgba(44,44,44,.9);--txt:#fff;--txt2:#c3c3c3;
+  --bg:#202020;--card:#2b2b2b;--pan:rgba(44,44,44,.92);--txt:#fff;--txt2:#c3c3c3;
   --ln:rgba(255,255,255,.09);--hov:rgba(255,255,255,.06);--hov2:rgba(255,255,255,.1);
-  --tb:rgba(32,32,32,.85);--win:#202020;--shd:0 18px 48px rgba(0,0,0,.66);--shd-sm:0 4px 16px rgba(0,0,0,.5)
+  --tb:rgba(32,32,32,.85);--win:#202020;--shd:0 14px 42px rgba(0,0,0,.55);--shd-sm:0 3px 12px rgba(0,0,0,.4)
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{height:100%;margin:0;overflow:hidden}
-body{font-family:"Segoe UI","Microsoft YaHei",sans-serif;font-size:14px;color:var(--txt);background:#000}
+body{font-family:"Segoe UI","-apple-system","Microsoft YaHei",sans-serif;font-size:13.5px;color:var(--txt);background:#000;-webkit-font-smoothing:antialiased}
 input,textarea,select{font-family:inherit;-webkit-user-select:text;user-select:text}button{font-family:inherit;cursor:pointer}
-::-webkit-scrollbar{width:10px;height:10px}::-webkit-scrollbar-thumb{background:#888;border-radius:6px;border:2px solid transparent;background-clip:content-box}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-thumb{background:rgba(150,150,150,0.4);border-radius:3px}::-webkit-scrollbar-track{background:transparent}
 .hide{display:none!important}.ic{display:block;flex-shrink:0}
 
-/* ================= 1. 锁屏界面 (手机风格) ================= */
+/* ================= 1. 锁屏界面 (真实山峰壁纸) ================= */
 #lock-screen, #desktop {
-  background: url('https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=2070&auto=format&fit=crop') center/cover;
+  background: url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat;
+  will-change: transform, opacity;
 }
 #lock-screen{
   position:fixed;inset:0;z-index:10000;
   display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:60px 20px;
-  transition:transform 0.6s cubic-bezier(0.16,1,0.3,1),opacity 0.6s;
+  transition:transform 0.45s cubic-bezier(0.16,1,0.3,1),opacity 0.45s;
 }
 #lock-screen.unlocked{transform:translateY(-100%);opacity:0;pointer-events:none}
-.lock-time{color:#fff;font-size:80px;font-weight:200;text-shadow:0 4px 20px rgba(0,0,0,.5);margin-top:50px}
-.lock-date{color:rgba(255,255,255,.8);font-size:18px;margin-top:-10px}
-.lock-bottom{color:#fff;display:flex;flex-direction:column;align-items:center;gap:15px;animation:bounce 2s infinite}
-.lock-bottom svg{width:32px;height:32px;fill:none;stroke:currentColor;stroke-width:2}
-@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.lock-time{color:#fff;font-size:76px;font-weight:200;text-shadow:0 4px 20px rgba(0,0,0,.6);margin-top:50px}
+.lock-date{color:rgba(255,255,255,.9);font-size:17px;margin-top:-10px;text-shadow:0 2px 10px rgba(0,0,0,.5)}
+.lock-bottom{color:#fff;display:flex;flex-direction:column;align-items:center;gap:12px;animation:bounce 2s infinite;cursor:pointer}
+.lock-bottom svg{width:28px;height:28px;fill:none;stroke:currentColor;stroke-width:2}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 
 /* ================= 2. 登录界面 ================= */
 #login-screen{
-  position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.4);backdrop-filter:blur(20px);
+  position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.45);backdrop-filter:blur(25px);-webkit-backdrop-filter:blur(25px);
   display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;
-  transition:opacity 0.5s;opacity:1;
+  transition:opacity 0.35s ease;opacity:1;
 }
 #login-screen.hide-login{opacity:0;pointer-events:none}
-.login-avatar{width:100px;height:100px;border-radius:50%;background:var(--acc);display:grid;place-items:center;font-size:40px;font-weight:600;margin-bottom:20px;box-shadow:0 10px 30px rgba(0,0,0,.5)}
-.login-name{font-size:24px;margin-bottom:20px;font-weight:500}
-.login-box{display:flex;gap:10px;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:30px;padding:5px 5px 5px 20px;align-items:center}
-.login-box input{background:transparent;border:none;color:#fff;font-size:16px;outline:none;width:200px}
-.login-box button{background:var(--acc);border:none;color:#fff;border-radius:25px;padding:10px 20px;font-size:14px;font-weight:600;transition:0.2s}
-.login-box button:hover{filter:brightness(1.2)}
+.login-avatar{width:86px;height:86px;border-radius:50%;background:var(--acc);display:grid;place-items:center;font-size:34px;font-weight:600;margin-bottom:18px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.login-name{font-size:21px;margin-bottom:18px;font-weight:500}
+.login-box{display:flex;gap:8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:28px;padding:4px 4px 4px 16px;align-items:center}
+.login-box input{background:transparent;border:none;color:#fff;font-size:14.5px;outline:none;width:170px}
+.login-box button{background:var(--acc);border:none;color:#fff;border-radius:24px;padding:8px 16px;font-size:12.5px;font-weight:600;transition:filter .15s}
+.login-box button:hover{filter:brightness(1.15)}
 
-/* ================= 3. 桌面层 ================= */
+/* ================= 3. 桌面层 (去边框、提速) ================= */
 #desktop{position:fixed;inset:0;overflow:hidden}
-#desk-icons{position:absolute;left:10px;top:10px;display:grid;grid-template-columns:repeat(auto-fill,88px);grid-auto-rows:96px;gap:2px;padding:4px;max-height:calc(100% - 70px);overflow:auto;z-index:20}
-.desk-ic{display:flex;flex-direction:column;align-items:center;gap:6px;padding:8px 2px;border-radius:6px;transition:background .15s;border:1px solid transparent;cursor:pointer}
+#desk-icons{position:absolute;left:10px;top:10px;display:grid;grid-template-columns:repeat(auto-fill,76px);grid-auto-rows:84px;gap:2px;padding:4px;max-height:calc(100% - 60px);overflow:auto;z-index:20}
+.desk-ic{display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 2px;border-radius:6px;transition:background .1s;border:none!important;cursor:pointer}
 .desk-ic:hover{background:rgba(255,255,255,.14)}
-.desk-ic .ic{width:48px;height:48px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45))}
-.desk-ic span{font-size:11.5px;color:#fff;text-align:center;line-height:1.3;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.9)}
+.desk-ic:active{background:rgba(255,255,255,.22)}
+.desk-ic .ic{width:36px;height:36px;filter:drop-shadow(0 2px 5px rgba(0,0,0,.45))}
+.desk-ic span{font-size:11px;color:#fff;text-align:center;line-height:1.2;max-width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,0.9)}
 
-/* ================= 4. 窗口系统 ================= */
+/* ================= 4. 窗口系统 (硬件加速流畅拖拽) ================= */
 #win-layer{position:absolute;left:0;right:0;top:0;bottom:48px;overflow:hidden;z-index:100;pointer-events:none}
-.win{position:absolute;display:flex;flex-direction:column;overflow:hidden;background:var(--win);border:1px solid var(--ln);border-radius:8px;box-shadow:var(--shd);min-width:320px;min-height:200px;pointer-events:auto;animation:wIn .2s cubic-bezier(.16,1,.3,1)}
-@keyframes wIn{from{opacity:0;transform:scale(.95) translateY(20px)}to{opacity:1;transform:none}}
-.win.focused{box-shadow:0 26px 62px rgba(0,0,0,.5),0 0 0 1px rgba(0,0,0,.15)}
-[data-theme="dark"] .win.focused{box-shadow:0 26px 62px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.15)}
+.win{position:absolute;display:flex;flex-direction:column;overflow:hidden;background:var(--win);border:1px solid var(--ln);border-radius:7px;box-shadow:var(--shd);min-width:300px;min-height:180px;pointer-events:auto;will-change:transform,width,height;animation:wIn .16s cubic-bezier(.16,1,.3,1)}
+@keyframes wIn{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:none}}
+.win.focused{box-shadow:0 22px 55px rgba(0,0,0,.45),0 0 0 1px rgba(0,0,0,.12)}
+[data-theme="dark"] .win.focused{box-shadow:0 22px 55px rgba(0,0,0,.8),0 0 0 1px rgba(255,255,255,.12)}
 .win.max{border-radius:0;border:none;top:0!important;left:0!important;width:100%!important;height:100%!important}
 .win.minimized{display:none}
-.win-tb{height:38px;flex:0 0 38px;display:flex;align-items:center;gap:9px;padding-left:12px;background:var(--win);touch-action:none;user-select:none}
-.win-tb-icon .ic{width:16px;height:16px}.win-tb-title{flex:1;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.win-ctrl{display:flex;height:100%;flex-shrink:0}.win-ctrl button{width:46px;height:100%;border:none;background:transparent;color:var(--txt);display:grid;place-items:center;transition:background .15s}
+.win-tb{height:35px;flex:0 0 35px;display:flex;align-items:center;gap:8px;padding-left:10px;background:var(--win);cursor:default;user-select:none}
+.win-tb-icon .ic{width:14px;height:14px}.win-tb-title{flex:1;font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.win-ctrl{display:flex;height:100%;flex-shrink:0}.win-ctrl button{width:40px;height:100%;border:none;background:transparent;color:var(--txt);display:grid;place-items:center;transition:background .1s}
 .win-ctrl button svg{width:10px;height:10px;stroke:currentColor;stroke-width:1.1;fill:none}
 .win-ctrl button:hover{background:var(--hov2)}.win-ctrl button.close-btn:hover{background:#c42b1c;color:#fff}
-.win-body{flex:1;overflow:auto;position:relative;background:var(--win);outline:none}
+.win-body{flex:1;overflow:auto;position:relative;background:var(--win);outline:none;will-change:scroll-position}
 
 /* ================= 5. 任务栏 ================= */
-#taskbar{position:absolute;left:0;right:0;bottom:0;z-index:8000;height:48px;display:flex;align-items:center;background:var(--tb);backdrop-filter:blur(34px);border-top:1px solid var(--ln)}
-#tb-center{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:3px;height:100%;padding:0 6px;max-width:70%}
-#tb-apps{display:flex;align-items:center;gap:3px;overflow-x:auto;scrollbar-width:none}#tb-apps::-webkit-scrollbar{display:none}
-.tb-btn{width:42px;height:42px;border-radius:5px;border:none;background:transparent;display:grid;place-items:center;position:relative;color:var(--txt);flex-shrink:0}
-.tb-btn:hover{background:var(--hov2)}.tb-btn .ic{width:24px;height:24px}.tb-btn.start-btn .ic{width:26px;height:26px}
-.tb-btn.active::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:14px;height:3px;border-radius:2px;background:var(--acc)}
+#taskbar{position:absolute;left:0;right:0;bottom:0;z-index:8000;height:48px;display:flex;align-items:center;background:var(--tb);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-top:1px solid var(--ln)}
+#tb-center{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:2px;height:100%;padding:0 6px;max-width:70%}
+#tb-apps{display:flex;align-items:center;gap:2px;overflow-x:auto;scrollbar-width:none}#tb-apps::-webkit-scrollbar{display:none}
+.tb-btn{width:38px;height:38px;border-radius:5px;border:none;background:transparent;display:grid;place-items:center;position:relative;color:var(--txt);flex-shrink:0;transition:background .1s}
+.tb-btn:hover{background:var(--hov2)}.tb-btn .ic{width:21px;height:21px}.tb-btn.start-btn .ic{width:23px;height:23px}
+.tb-btn.active::after{content:'';position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:10px;height:2.5px;border-radius:2px;background:var(--acc)}
 #tb-right{position:absolute;right:6px;display:flex;align-items:center;height:100%;gap:2px}
-.tray-btn{height:40px;border:none;background:transparent;color:var(--txt);border-radius:5px;display:flex;align-items:center;gap:8px;padding:0 10px;transition:background .15s}
-.tray-btn:hover{background:var(--hov2)}#tb-clock{flex-direction:column;align-items:flex-end;line-height:1.22;padding:0 10px;font-variant-numeric:tabular-nums}#tb-clock .t1{font-size:12px}#tb-clock .t2{font-size:11px;color:var(--txt2)}
+.tray-btn{height:36px;border:none;background:transparent;color:var(--txt);border-radius:4px;display:flex;align-items:center;gap:6px;padding:0 6px;transition:background .1s}
+.tray-btn:hover{background:var(--hov2)}#tb-clock{flex-direction:column;align-items:flex-end;line-height:1.18;padding:0 6px;font-variant-numeric:tabular-nums}#tb-clock .t1{font-size:11px}#tb-clock .t2{font-size:10px;color:var(--txt2)}
 
 /* ================= 6. 弹出面板 ================= */
-.pop{position:absolute;background:var(--pan);backdrop-filter:blur(44px);border:1px solid var(--ln);border-radius:10px;box-shadow:var(--shd);z-index:8500;opacity:0;pointer-events:none;transition:.24s cubic-bezier(.16,1,.3,1)}
+.pop{position:absolute;background:var(--pan);backdrop-filter:blur(35px);-webkit-backdrop-filter:blur(35px);border:1px solid var(--ln);border-radius:8px;box-shadow:var(--shd);z-index:8500;opacity:0;pointer-events:none;will-change:transform,opacity;transition:transform .18s cubic-bezier(.16,1,.3,1),opacity .18s}
 .pop.open{opacity:1;pointer-events:auto}
-#start-menu{left:50%;bottom:56px;transform:translateX(-50%) translateY(18px) scale(.97);width:min(94vw,640px);height:min(78vh,680px);display:flex;flex-direction:column;overflow:hidden}
+#start-menu{left:50%;bottom:52px;transform:translateX(-50%) translateY(12px) scale(.98);width:min(90vw,560px);height:min(72vh,580px);display:flex;flex-direction:column;overflow:hidden}
 #start-menu.open{transform:translateX(-50%) translateY(0) scale(1)}
-.sm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:4px;padding:20px;overflow-y:auto}
-.sm-app{display:flex;flex-direction:column;align-items:center;gap:8px;padding:13px 3px;border:none;background:transparent;border-radius:5px;color:var(--txt);font-size:11.5px}
-.sm-app:hover{background:var(--hov)}.sm-app .ic{width:32px;height:32px}
-.sm-foot{height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 30px;background:var(--hov);border-top:1px solid var(--ln);margin-top:auto}
-.sm-user{display:flex;align-items:center;gap:10px;font-size:12.5px;padding:6px 10px;border-radius:5px;border:none;background:transparent;color:var(--txt)}
-.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:600;color:#fff;background:var(--acc)}
+.sm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:4px;padding:16px;overflow-y:auto}
+.sm-app{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 2px;border:none;background:transparent;border-radius:5px;color:var(--txt);font-size:10.5px;transition:background .1s}
+.sm-app:hover{background:var(--hov)}.sm-app .ic{width:28px;height:28px}
+.sm-foot{height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:var(--hov);border-top:1px solid var(--ln);margin-top:auto}
+.sm-user{display:flex;align-items:center;gap:7px;font-size:11.5px;padding:3px 6px;border-radius:4px;border:none;background:transparent;color:var(--txt)}
+.avatar{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:600;color:#fff;background:var(--acc)}
 
-#quick-panel{right:8px;bottom:56px;transform:translateY(18px) scale(.97);width:320px;padding:16px}
+#quick-panel{right:6px;bottom:52px;transform:translateY(12px) scale(.98);width:280px;padding:12px}
 #quick-panel.open{transform:translateY(0) scale(1)}
-.qs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
-.qs-tile{height:66px;border-radius:8px;border:1px solid var(--ln);background:var(--card);color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-size:10.5px}
+.qs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.qs-tile{height:56px;border-radius:6px;border:1px solid var(--ln);background:var(--card);color:var(--txt);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:9.5px;transition:filter .1s}
 .qs-tile.on{background:var(--acc);color:var(--acc-fg);border-color:var(--acc)}
-.qs-slider{display:flex;align-items:center;gap:12px;margin-bottom:12px}.qs-slider input[type=range]{flex:1;accent-color:var(--acc)}
-.qs-slider span{font-size:11px;color:var(--txt2);width:34px;text-align:right}
+.qs-slider{display:flex;align-items:center;gap:8px;margin-bottom:8px}.qs-slider input[type=range]{flex:1;accent-color:var(--acc)}
+.qs-slider span{font-size:10.5px;color:var(--txt2);width:30px;text-align:right}
 
-#ctx-menu{position:fixed;z-index:9600;min-width:180px;padding:5px;background:var(--pan);backdrop-filter:blur(40px);border:1px solid var(--ln);border-radius:8px;box-shadow:var(--shd);opacity:0;pointer-events:none;transition:.14s;font-size:12.5px}
+#ctx-menu{position:fixed;z-index:9600;min-width:150px;padding:3px;background:var(--pan);backdrop-filter:blur(30px);border:1px solid var(--ln);border-radius:6px;box-shadow:var(--shd);opacity:0;pointer-events:none;transition:opacity .1s;font-size:11.5px}
 #ctx-menu.open{opacity:1;pointer-events:auto}
-.ctx-item{display:flex;align-items:center;gap:10px;width:100%;padding:8px 12px;border:none;background:transparent;color:var(--txt);border-radius:5px;text-align:left}
+.ctx-item{display:flex;align-items:center;gap:7px;width:100%;padding:6px 9px;border:none;background:transparent;color:var(--txt);border-radius:4px;text-align:left}
 .ctx-item:hover{background:var(--hov2)}
 
-#toasts{position:absolute;right:12px;bottom:60px;z-index:9200;display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none}
-.toast{background:var(--pan);backdrop-filter:blur(30px);border:1px solid var(--ln);border-radius:8px;box-shadow:var(--shd);padding:12px 16px;min-width:240px;max-width:340px;font-size:12.5px;animation:tIn .3s cubic-bezier(.16,1,.3,1)}
-@keyframes tIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
-.toast b{display:block;margin-bottom:3px;font-size:12.5px}.toast p{margin:0;color:var(--txt2);font-size:11.5px;line-height:1.5}
+#toasts{position:absolute;right:10px;bottom:54px;z-index:9200;display:flex;flex-direction:column-reverse;gap:6px;pointer-events:none}
+.toast{background:var(--pan);backdrop-filter:blur(25px);border:1px solid var(--ln);border-radius:6px;box-shadow:var(--shd);padding:9px 12px;min-width:200px;max-width:300px;font-size:11.5px;animation:tIn .2s cubic-bezier(.16,1,.3,1)}
+@keyframes tIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+.toast b{display:block;margin-bottom:2px;font-size:11.5px}.toast p{margin:0;color:var(--txt2);font-size:10.5px;line-height:1.4}
 
 /* ================= 7. 应用特定样式 ================= */
 /* 资源管理器 */
-.explorer{display:flex;height:100%}.ex-side{width:170px;background:var(--hov);border-right:1px solid var(--ln);padding:8px;overflow-y:auto;flex-shrink:0}
-.ex-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:5px;font-size:12px;color:var(--txt);border:none;background:transparent;width:100%;text-align:left}
-.ex-item:hover{background:var(--hov2)}.ex-item.on{background:var(--hov2);font-weight:600}.ex-item .ic{width:16px;height:16px}
+.explorer{display:flex;height:100%}.ex-side{width:150px;background:var(--hov);border-right:1px solid var(--ln);padding:5px;overflow-y:auto;flex-shrink:0}
+.ex-item{display:flex;align-items:center;gap:7px;padding:5px 7px;border-radius:4px;font-size:11px;color:var(--txt);border:none;background:transparent;width:100%;text-align:left}
+.ex-item:hover{background:var(--hov2)}.ex-item.on{background:var(--hov2);font-weight:600}.ex-item .ic{width:14px;height:14px}
 .ex-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.ex-toolbar{height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--ln)}
-.ex-btn{padding:4px 10px;border:1px solid var(--ln);background:var(--win);border-radius:4px;font-size:12px;color:var(--txt)}.ex-btn:hover{background:var(--hov2)}
-.ex-path{font-size:12px;color:var(--txt2);flex:1}
-.ex-files{flex:1;overflow-y:auto;padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px;align-content:start}
-.ex-file{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 6px;border-radius:6px;font-size:11px;text-align:center;word-break:break-all;cursor:default}
-.ex-file:hover{background:var(--hov)}.ex-file.on{background:rgba(0,120,212,.2);border:1px solid var(--acc)}.ex-file .ic{width:34px;height:34px}
-.ex-empty{grid-column:1/-1;text-align:center;padding:40px;color:var(--txt2);font-size:12px}
+.ex-toolbar{height:36px;display:flex;align-items:center;gap:7px;padding:0 10px;border-bottom:1px solid var(--ln)}
+.ex-btn{padding:2px 7px;border:1px solid var(--ln);background:var(--win);border-radius:3px;font-size:11px;color:var(--txt)}.ex-btn:hover{background:var(--hov2)}
+.ex-path{font-size:11px;color:var(--txt2);flex:1}
+.ex-files{flex:1;overflow-y:auto;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:5px;align-content:start}
+.ex-file{display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 3px;border-radius:4px;font-size:10px;text-align:center;word-break:break-all;cursor:default}
+.ex-file:hover{background:var(--hov)}.ex-file.on{background:rgba(0,120,212,.15)}.ex-file .ic{width:28px;height:28px}
+.ex-empty{grid-column:1/-1;text-align:center;padding:24px;color:var(--txt2);font-size:11px}
 
-/* 超全设置面板 */
-.settings{display:flex;height:100%}.st-side{width:210px;background:var(--hov);border-right:1px solid var(--ln);padding:10px 8px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
-.st-tab{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:5px;font-size:12.5px;color:var(--txt2);border:none;background:transparent;text-align:left;width:100%}
+/* 设置面板 */
+.settings{display:flex;height:100%}.st-side{width:180px;background:var(--hov);border-right:1px solid var(--ln);padding:6px 5px;display:flex;flex-direction:column;gap:1px;overflow-y:auto}
+.st-tab{display:flex;align-items:center;gap:7px;padding:7px 9px;border-radius:4px;font-size:11.5px;color:var(--txt2);border:none;background:transparent;text-align:left;width:100%}
 .st-tab:hover{background:var(--hov2);color:var(--txt)}.st-tab.on{background:var(--hov2);color:var(--txt);font-weight:600}
-.st-main{flex:1;padding:24px 28px;overflow-y:auto}
-.st-card{background:var(--card);border:1px solid var(--ln);border-radius:8px;padding:14px 18px;margin-bottom:12px}
-.st-row{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--ln)}.st-row:last-child{border-bottom:none}
-.st-row .txt b{display:block;font-size:12.5px;font-weight:500}.st-row .txt small{display:block;font-size:11px;color:var(--txt2);margin-top:3px}
-.toggle{position:relative;width:42px;height:22px;border-radius:11px;background:var(--hov2);border:1px solid var(--ln);cursor:pointer;flex-shrink:0}
-.toggle::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--txt2);transition:.2s}
-.toggle.on{background:var(--acc);border-color:var(--acc)}.toggle.on::after{left:23px;background:#fff}
-.st-sel{padding:6px 10px;border-radius:5px;border:1px solid var(--ln);background:var(--win);color:var(--txt);font-size:12px;outline:none;cursor:pointer}
+.st-main{flex:1;padding:18px 22px;overflow-y:auto}
+.st-card{background:var(--card);border:1px solid var(--ln);border-radius:6px;padding:10px 14px;margin-bottom:8px}
+.st-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--ln)}.st-row:last-child{border-bottom:none}
+.st-row .txt b{display:block;font-size:11.5px;font-weight:500}.st-row .txt small{display:block;font-size:10px;color:var(--txt2);margin-top:2px}
+.toggle{position:relative;width:36px;height:18px;border-radius:9px;background:var(--hov2);border:1px solid var(--ln);cursor:pointer;flex-shrink:0}
+.toggle::after{content:'';position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:var(--txt2);transition:left .15s}
+.toggle.on{background:var(--acc);border-color:var(--acc)}.toggle.on::after{left:20px;background:#fff}
+.st-sel{padding:4px 7px;border-radius:3px;border:1px solid var(--ln);background:var(--win);color:var(--txt);font-size:11px;outline:none;cursor:pointer}
 
 /* 天气 */
-.weather{height:100%;overflow-y:auto;padding:20px;background:linear-gradient(160deg,#1d4f8f,#0b1d33);color:#fff;font-size:13px}
-.w-top{display:flex;justify-content:space-between;margin-bottom:20px}.w-city{font-size:17px;font-weight:600}
-.w-now{display:flex;align-items:center;gap:16px}.w-temp{font-size:56px;font-weight:200;line-height:1}
-.w-details{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-top:18px}
-.w-det{padding:12px;border-radius:9px;background:rgba(255,255,255,.1);font-size:11px}.w-det small{display:block;opacity:.72;margin-bottom:5px}.w-det b{font-size:16px;font-weight:500}
-.w-tip{padding:14px 16px;border-radius:10px;background:rgba(255,255,255,.1);font-size:12px;line-height:1.7;margin-top:16px}
+.weather{height:100%;overflow-y:auto;padding:16px;background:linear-gradient(160deg,#1d4f8f,#0b1d33);color:#fff;font-size:11.5px}
+.w-top{display:flex;justify-content:space-between;margin-bottom:16px}.w-city{font-size:15px;font-weight:600}
+.w-now{display:flex;align-items:center;gap:12px}.w-temp{font-size:46px;font-weight:200;line-height:1}
+.w-details{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:6px;margin-top:14px}
+.w-det{padding:8px;border-radius:6px;background:rgba(255,255,255,.1);font-size:10px}.w-det small{display:block;opacity:.7;margin-bottom:3px}.w-det b{font-size:14px;font-weight:500}
+.w-tip{padding:10px 12px;border-radius:6px;background:rgba(255,255,255,.1);font-size:11px;line-height:1.5;margin-top:12px}
 
 /* 计算器、记事本、终端 */
-.calc{display:flex;flex-direction:column;height:100%;background:var(--hov)}.calc-disp{padding:18px 22px;text-align:right;font-size:38px;font-weight:300;background:var(--win);border-bottom:1px solid var(--ln);overflow:hidden}
+.calc{display:flex;flex-direction:column;height:100%;background:var(--hov)}.calc-disp{padding:14px 18px;text-align:right;font-size:32px;font-weight:300;background:var(--win);border-bottom:1px solid var(--ln);overflow:hidden}
 .calc-keys{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--ln)}
-.calc-keys button{border:none;background:var(--win);color:var(--txt);font-size:19px;cursor:pointer}.calc-keys button:hover{background:var(--hov2)}
-.calc-keys button.op{background:var(--hov);font-size:17px}.calc-keys button.eq{background:var(--acc);color:var(--acc-fg)}
-.np{display:flex;flex-direction:column;height:100%}.np-area{flex:1;border:none;outline:none;resize:none;padding:18px;background:var(--win);color:var(--txt);font-family:Consolas,"Courier New",monospace;font-size:13.5px;line-height:1.65}
-.term{height:100%;background:#0c0c0c;color:#d4d4d4;font-family:Consolas,"Courier New",monospace;font-size:12.5px;padding:14px;overflow-y:auto;line-height:1.6}
-.term-line{white-space:pre-wrap;word-break:break-word}.term-in{display:flex;gap:8px}.term-in span{color:#4cc2ff}.term-in input{flex:1;background:transparent;border:none;outline:none;color:#d4d4d4;font-family:inherit;font-size:inherit}
+.calc-keys button{border:none;background:var(--win);color:var(--txt);font-size:16px;cursor:pointer;transition:background .08s}.calc-keys button:hover{background:var(--hov2)}
+.calc-keys button.op{background:var(--hov);font-size:14px}.calc-keys button.eq{background:var(--acc);color:var(--acc-fg)}
+.np{display:flex;flex-direction:column;height:100%}.np-area{flex:1;border:none;outline:none;resize:none;padding:14px;background:var(--win);color:var(--txt);font-family:Consolas,"Courier New",monospace;font-size:12.5px;line-height:1.5}
+.term{height:100%;background:#0c0c0c;color:#d4d4d4;font-family:Consolas,"Courier New",monospace;font-size:11.5px;padding:10px;overflow-y:auto;line-height:1.4}
+.term-line{white-space:pre-wrap;word-break:break-word}.term-in{display:flex;gap:6px}.term-in span{color:#4cc2ff}.term-in input{flex:1;background:transparent;border:none;outline:none;color:#d4d4d4;font-family:inherit;font-size:inherit}
 
-/* ================= 浏览器专属集成样式 ================= */
+/* ================= 浏览器专属极速集成样式 ================= */
 .qz-browser-wrap{display:flex;flex-direction:column;height:100%;background:var(--bg-color,#f8f9fa);color:var(--text-color,#202124);position:relative;overflow:hidden;}
 .qz-browser-wrap *{box-sizing:border-box;}
-.qz-top-tabs-bar{display:flex;align-items:center;background:var(--bg-color,#f8f9fa);padding:6px 8px 0 8px;gap:4px;overflow-x:auto;border-bottom:1px solid var(--border-color,#e0e0e0);z-index:1001;scrollbar-width:none;}
+.qz-top-tabs-bar{display:flex;align-items:center;background:var(--bg-color,#f8f9fa);padding:4px 5px 0 5px;gap:2px;overflow-x:auto;border-bottom:1px solid var(--border-color,#e0e0e0);z-index:1001;scrollbar-width:none;}
 .qz-top-tabs-bar::-webkit-scrollbar{display:none;}
-.qz-top-tab{display:flex;align-items:center;gap:8px;background:var(--toolbar-bg,#ffffff);padding:5px 10px 5px 12px;border-radius:6px 6px 0 0;font-size:12px;max-width:160px;min-width:104px;border:1px solid var(--border-color,#e0e0e0);border-bottom:none;cursor:pointer;color:var(--text-muted,#5f6368);position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
+.qz-top-tab{display:flex;align-items:center;gap:5px;background:var(--toolbar-bg,#ffffff);padding:3px 7px 3px 9px;border-radius:4px 4px 0 0;font-size:11px;max-width:140px;min-width:90px;border:1px solid var(--border-color,#e0e0e0);border-bottom:none;cursor:pointer;color:var(--text-muted,#5f6368);position:relative;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0;}
 .qz-top-tab.active{background:var(--toolbar-bg,#ffffff);color:var(--text-color,#202124);font-weight:500;border-top:2px solid var(--tint-color,#1a73e8);border-bottom:1px solid var(--toolbar-bg,#ffffff);}
 .qz-top-tab .qz-tab-title{flex:1;overflow:hidden;text-overflow:ellipsis;padding-top:1px;}
-.qz-top-tab .qz-close-tab{background:transparent;border:none;color:var(--text-muted,#5f6368);font-size:14px;border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex-shrink:0;line-height:1;}
-.qz-new-tab-btn{background:transparent;border:none;color:var(--text-muted,#5f6368);font-size:18px;padding:4px 10px;cursor:pointer;border-radius:4px;}
-.qz-header{display:flex;align-items:center;padding:6px 10px;background:var(--toolbar-bg,#ffffff);border-bottom:1px solid var(--border-color,#e0e0e0);z-index:1000;gap:4px;}
-.qz-footer{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;background:var(--toolbar-bg,#ffffff);border-top:1px solid var(--border-color,#e0e0e0);z-index:1000;gap:4px;}
-.qz-icon-btn{background:transparent;border:none;color:var(--tint-color,#1a73e8);padding:6px;border-radius:6px;display:flex;justify-content:center;align-items:center;cursor:pointer;font-size:14px;font-weight:600;}
-.qz-footer .qz-icon-btn{flex-direction:column;gap:2px;font-size:10px;padding:4px 6px;flex:1;color:var(--text-muted,#5f6368);}
-.qz-footer .qz-icon-btn svg{width:18px;height:18px;fill:currentColor;}
-.qz-address-bar{flex:1;display:flex;align-items:center;background:var(--bg-color,#f8f9fa);border:1px solid var(--border-color,#e0e0e0);border-radius:18px;padding:0 10px;height:34px;position:relative;}
-.qz-address-bar input{flex:1;border:none;background:transparent;color:var(--text-color,#202124);font-size:13px;outline:none;padding:0 6px;text-align:center;}
+.qz-top-tab .qz-close-tab{background:transparent;border:none;color:var(--text-muted,#5f6368);font-size:12px;border-radius:50%;width:13px;height:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex-shrink:0;line-height:1;}
+.qz-new-tab-btn{background:transparent;border:none;color:var(--text-muted,#5f6368);font-size:15px;padding:2px 6px;cursor:pointer;border-radius:3px;}
+.qz-header{display:flex;align-items:center;padding:4px 7px;background:var(--toolbar-bg,#ffffff);border-bottom:1px solid var(--border-color,#e0e0e0);z-index:1000;gap:3px;}
+.qz-footer{display:flex;justify-content:space-between;align-items:center;padding:4px 7px;background:var(--toolbar-bg,#ffffff);border-top:1px solid var(--border-color,#e0e0e0);z-index:1000;gap:3px;}
+.qz-icon-btn{background:transparent;border:none;color:var(--tint-color,#1a73e8);padding:4px;border-radius:4px;display:flex;justify-content:center;align-items:center;cursor:pointer;font-size:12px;font-weight:600;}
+.qz-footer .qz-icon-btn{flex-direction:column;gap:1px;font-size:9px;padding:2px 4px;flex:1;color:var(--text-muted,#5f6368);}
+.qz-footer .qz-icon-btn svg{width:15px;height:15px;fill:currentColor;}
+.qz-address-bar{flex:1;display:flex;align-items:center;background:var(--bg-color,#f8f9fa);border:1px solid var(--border-color,#e0e0e0);border-radius:14px;padding:0 8px;height:28px;position:relative;}
+.qz-address-bar input{flex:1;border:none;background:transparent;color:var(--text-color,#202124);font-size:11.5px;outline:none;padding:0 3px;text-align:center;}
 .qz-address-bar input:focus{text-align:left;}
-.qz-progress-line{position:absolute;bottom:0;left:0;height:2px;background:var(--tint-color,#1a73e8);width:0%;transition:width 0.25s ease-out;border-radius:0 0 18px 18px;opacity:0;}
+.qz-progress-line{position:absolute;bottom:0;left:0;height:2px;background:var(--tint-color,#1a73e8);width:0%;transition:width 0.2s ease-out;border-radius:0 0 14px 14px;opacity:0;}
 .qz-main{flex:1;position:relative;background:var(--bg-color,#f8f9fa);overflow:hidden;}
 .qz-frames-container{position:absolute;inset:0;z-index:10;pointer-events:none;}
 .qz-frames-container iframe{width:100%;height:100%;border:none;background:var(--card-bg,#ffffff);display:none;position:absolute;inset:0;}
 .qz-frames-container iframe.active{display:block;pointer-events:auto;}
-.qz-home-view{position:absolute;inset:0;z-index:20;overflow-y:auto;padding:22px 20px 30px;display:flex;flex-direction:column;align-items:center;}
-.qz-brand-logo{width:58px;height:58px;display:block;margin-bottom:12px;}
-.qz-greeting{font-size:23px;font-weight:700;margin-top:2px;margin-bottom:10px;text-align:center;}
-.qz-network-badge{display:inline-flex;align-items:center;gap:6px;background:var(--card-bg,#ffffff);border:1px solid var(--border-color,#e0e0e0);padding:5px 12px;border-radius:16px;font-size:12px;color:var(--text-muted,#5f6368);margin-bottom:18px;cursor:pointer;}
-.qz-home-search{width:100%;max-width:640px;display:flex;align-items:center;background:var(--card-bg,#ffffff);border:1px solid var(--border-color,#e0e0e0);border-radius:30px;padding:0 22px;height:58px;box-shadow:0 1px 2px rgba(0,0,0,0.05);margin-bottom:22px;}
-.qz-home-search svg{margin-right:14px;flex-shrink:0;fill:var(--text-muted,#5f6368);width:22px;height:22px;}
-.qz-home-search input{flex:1;border:none;background:transparent;color:var(--text-color,#202124);font-size:16.5px;outline:none;}
-.qz-api-dashboard{width:100%;max-width:640px;margin-bottom:12px;}
-.qz-api-card{background:var(--card-bg,#ffffff);border:1px solid var(--border-color,#e0e0e0);border-radius:14px;padding:14px 18px;}
-.qz-bottom-search{flex:2;min-width:120px;display:flex;align-items:center;background:var(--bg-color,#f8f9fa);border:1px solid var(--border-color,#e0e0e0);border-radius:16px;padding:0 10px;height:32px;margin:0 4px;}
-.qz-bottom-search input{flex:1;border:none;background:transparent;color:var(--text-color,#202124);font-size:12px;outline:none;text-align:center;}
+.qz-home-view{position:absolute;inset:0;z-index:20;overflow-y:auto;padding:18px 14px 20px;display:flex;flex-direction:column;align-items:center;}
+.qz-brand-logo{width:46px;height:46px;display:block;margin-bottom:8px;}
+.qz-greeting{font-size:18px;font-weight:700;margin-top:2px;margin-bottom:6px;text-align:center;}
+.qz-network-badge{display:inline-flex;align-items:center;gap:4px;background:var(--card-bg,#ffffff);border:1px solid var(--border-color,#e0e0e0);padding:3px 9px;border-radius:12px;font-size:10.5px;color:var(--text-muted,#5f6368);margin-bottom:12px;cursor:pointer;}
+.qz-home-search{width:100%;max-width:540px;display:flex;align-items:center;background:var(--card-bg,#ffffff);border:1px solid var(--border-color,#e0e0e0);border-radius:26px;padding:0 16px;height:46px;box-shadow:0 1px 2px rgba(0,0,0,0.04);margin-bottom:16px;}
+.qz-home-search svg{margin-right:10px;flex-shrink:0;fill:var(--text-muted,#5f6368);width:18px;height:18px;}
+.qz-home-search input{flex:1;border:none;background:transparent;color:var(--text-color,#202124);font-size:14px;outline:none;}
+.qz-api-dashboard{width:100%;max-width:540px;margin-bottom:8px;}
+.qz-api-card{background:var(--card-bg,#ffffff);border:1px solid var(--border-color,#e0e0e0);border-radius:10px;padding:10px 14px;}
+.qz-bottom-search{flex:2;min-width:90px;display:flex;align-items:center;background:var(--bg-color,#f8f9fa);border:1px solid var(--border-color,#e0e0e0);border-radius:12px;padding:0 6px;height:26px;margin:0 3px;}
+.qz-bottom-search input{flex:1;border:none;background:transparent;color:var(--text-color,#202124);font-size:11px;outline:none;text-align:center;}
 </style>
 </head>
 <body>
@@ -207,7 +209,7 @@ input,textarea,select{font-family:inherit;-webkit-user-select:text;user-select:t
   </div>
   <div class="lock-bottom" onclick="unlockScreen()">
     <svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-    <span style="font-size:14px;opacity:0.8;">点击解锁</span>
+    <span style="font-size:12px;opacity:0.85;">点击解锁系统</span>
   </div>
 </div>
 
@@ -234,16 +236,16 @@ input,textarea,select{font-family:inherit;-webkit-user-select:text;user-select:t
         <span id="sm-uname">Administrator</span>
       </button>
       <button class="sm-power" id="sm-power" title="锁屏">
-        <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v9"/><path d="M6.5 6.5a8 8 0 1 0 11 0"/></svg>
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v9"/><path d="M6.5 6.5a8 8 0 1 0 11 0"/></svg>
       </button>
     </div>
   </div>
 
   <div id="quick-panel" class="pop">
     <div class="qs-grid">
-      <button class="qs-tile on" onclick="this.classList.toggle('on')"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 19.5a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2zm4.2-4.6a6 6 0 0 0-8.4 0l1.3 1.4a4 4 0 0 1 5.8 0l1.3-1.4zm3-3.1a10.2 10.2 0 0 0-14.4 0l1.3 1.4a8.2 8.2 0 0 1 11.8 0l1.3-1.4z"/></svg>Wi-Fi</button>
-      <button class="qs-tile" onclick="this.classList.toggle('on')"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M17.7 6.3a8 8 0 0 1 0 11.4l-1.4-1.4a6 6 0 0 0 0-8.6l1.4-1.4zM12 2a10 10 0 0 1 7.1 2.9l-1.4 1.4A8 8 0 0 0 12 4V2zm-5.7 4.3 1.4 1.4a6 6 0 0 0 0 8.6l-1.4 1.4a8 8 0 0 1 0-11.4zM12 22a10 10 0 0 1-7.1-2.9l1.4-1.4A8 8 0 0 0 12 20v2z"/></svg>蓝牙</button>
-      <button class="qs-tile" onclick="this.classList.toggle('on'); document.documentElement.setAttribute('data-theme', this.classList.contains('on')?'light':'dark')"><svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-16v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M19.1 4.9l-2.1 2.1M7 17l-2.1 2.1"/></svg>主题</button>
+      <button class="qs-tile on" onclick="this.classList.toggle('on')"><svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 19.5a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2zm4.2-4.6a6 6 0 0 0-8.4 0l1.3 1.4a4 4 0 0 1 5.8 0l1.3-1.4zm3-3.1a10.2 10.2 0 0 0-14.4 0l1.3 1.4a8.2 8.2 0 0 1 11.8 0l1.3-1.4z"/></svg>Wi-Fi</button>
+      <button class="qs-tile" onclick="this.classList.toggle('on')"><svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M17.7 6.3a8 8 0 0 1 0 11.4l-1.4-1.4a6 6 0 0 0 0-8.6l1.4-1.4zM12 2a10 10 0 0 1 7.1 2.9l-1.4 1.4A8 8 0 0 0 12 4V2zm-5.7 4.3 1.4 1.4a6 6 0 0 0 0 8.6l-1.4 1.4a8 8 0 0 1 0-11.4zM12 22a10 10 0 0 1-7.1-2.9l1.4-1.4A8 8 0 0 0 12 20v2z"/></svg>蓝牙</button>
+      <button class="qs-tile" onclick="this.classList.toggle('on'); document.documentElement.setAttribute('data-theme', this.classList.contains('on')?'light':'dark')"><svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 18a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm0-16v3m0 14v3M2 12h3m14 0h3M4.9 4.9l2.1 2.1m10 10 2.1 2.1M19.1 4.9l-2.1 2.1M7 17l-2.1 2.1"/></svg>主题</button>
     </div>
     <div class="qs-slider"><span>音量</span><input type="range" min="0" max="100" value="60" oninput="this.nextElementSibling.textContent=this.value+'%'"><span>60%</span></div>
     <div class="qs-slider"><span>亮度</span><input type="range" min="20" max="100" value="100" oninput="this.nextElementSibling.textContent=this.value+'%'"><span>100%</span></div>
@@ -252,14 +254,14 @@ input,textarea,select{font-family:inherit;-webkit-user-select:text;user-select:t
   <div id="taskbar">
     <div id="tb-center">
       <button class="tb-btn start-btn" id="tb-start" title="开始">
-        <svg class="ic" viewBox="0 0 24 24"><rect width="24" height="24" rx="5" fill="var(--acc)"/><path d="M12 4 L18 14 L13.4 19.6 L13.4 14.8 L5.6 14.8 Z" fill="#fff"/></svg>
+        <svg class="ic" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#3b7df0"/><path d="M32 12 L48 37 L36 51 L36 39 L15 39 Z" fill="#ffffff"/></svg>
       </button>
       <div id="tb-apps"></div>
     </div>
     <div id="tb-right">
       <button class="tray-btn" id="tb-quick" title="快捷设置">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 19.5a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2zm4.2-4.6a6 6 0 0 0-8.4 0l1.3 1.4a4 4 0 0 1 5.8 0l1.3-1.4zm3-3.1a10.2 10.2 0 0 0-14.4 0l1.3 1.4a8.2 8.2 0 0 1 11.8 0l1.3-1.4z"/></svg>
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M3 10v4h3.5L11 18V6L6.5 10H3zm12.5 2a4.4 4.4 0 0 0-2.5-4v8a4.4 4.4 0 0 0 2.5-4z"/></svg>
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M12 19.5a1.6 1.6 0 1 0 0-3.2 1.6 1.6 0 0 0 0 3.2zm4.2-4.6a6 6 0 0 0-8.4 0l1.3 1.4a4 4 0 0 1 5.8 0l1.3-1.4zm3-3.1a10.2 10.2 0 0 0-14.4 0l1.3 1.4a8.2 8.2 0 0 1 11.8 0l1.3-1.4z"/></svg>
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M3 10v4h3.5L11 18V6L6.5 10H3zm12.5 2a4.4 4.4 0 0 0-2.5-4v8a4.4 4.4 0 0 0 2.5-4z"/></svg>
       </button>
       <button class="tray-btn" id="tb-clock" title="日期和时间">
         <span class="t1" id="tc-t">--:--</span>
@@ -303,7 +305,7 @@ function notify(title, desc) {
   const t = document.createElement('div');
   t.className = 'toast'; t.innerHTML = `<b>${title}</b><p>${desc}</p>`;
   box.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 250); }, 2500);
 }
 
 // ================= 1. 锁屏与登录 =================
@@ -317,7 +319,7 @@ function unlockScreen() {
       $('#login-screen').classList.remove('hide');
       $('#login-input').focus();
     }
-  }, 600);
+  }, 450);
 }
 
 function doLogin() {
@@ -328,7 +330,7 @@ function doLogin() {
   setTimeout(() => {
     $('#login-screen').classList.add('hide');
     startDesktop();
-  }, 500);
+  }, 350);
 }
 
 $('#login-input')?.addEventListener('keydown', (e) => {
@@ -349,7 +351,7 @@ function initVFS() {
     VFS = { id: 'root', name: '此电脑', type: 'folder', children: [
       { id: 'desktop', name: '桌面', type: 'folder', children: [] },
       { id: 'documents', name: '文档', type: 'folder', children: [
-        { id: 'readme', name: '欢迎使用.txt', type: 'file', content: '欢迎使用轻舟 OS！\n\n您可以在此电脑中新建、重命名或删除文件。' }
+        { id: 'readme', name: '欢迎使用.txt', type: 'file', content: '欢迎使用轻舟 OS！\n\n系统性能已全面加速。' }
       ]},
       { id: 'downloads', name: '下载', type: 'folder', children: [] },
       { id: 'pictures', name: '图片', type: 'folder', children: [] }
@@ -380,10 +382,12 @@ function deleteNode(id) {
   if (rm(VFS)) { saveVFS(); return true; } return false;
 }
 
-// ================= 3. 应用定义 =================
+// ================= 3. 应用定义 (统一全新轻舟品牌标志) =================
+const qzLogoSvg = `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#3b7df0"/><path d="M32 12 L48 37 L36 51 L36 39 L15 39 Z" fill="#ffffff"/></svg>`;
+
 const apps = {
   explorer: { name: '此电脑', icon: `<svg viewBox="0 0 24 24" fill="#ffca28"><rect x="2" y="4" width="20" height="14" rx="2"/><path d="M2 8h20" stroke="#d4a015" stroke-width="2"/><rect x="6" y="12" width="12" height="2" fill="#fff"/></svg>` },
-  browser: { name: '轻舟浏览器', icon: `<svg viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#3b7df0"/><path d="M32 12 L48 37 L36 51 L36 39 L15 39 Z" fill="#ffffff"/></svg>` },
+  browser: { name: '轻舟浏览器', icon: qzLogoSvg },
   weather: { name: '天气', icon: `<svg viewBox="0 0 24 24" fill="#00a4ef"><circle cx="12" cy="12" r="5"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="#00a4ef" stroke-width="2"/></svg>` },
   settings: { name: '设置', icon: `<svg viewBox="0 0 24 24" fill="#6b7280"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4" fill="none" stroke="#fff" stroke-width="2"/></svg>` },
   calc: { name: '计算器', icon: `<svg viewBox="0 0 24 24" fill="#374151"><rect x="4" y="2" width="16" height="20" rx="2"/><rect x="6" y="4" width="12" height="4" fill="#9ee7ff"/></svg>` },
@@ -429,8 +433,8 @@ function openApp(appId) {
   const id = appId + '_' + (++winIdCounter);
   const win = document.createElement('div');
   win.className = 'win'; win.id = id;
-  win.style.width = '850px'; win.style.height = '560px';
-  win.style.top = '40px'; win.style.left = Math.max(20, (window.innerWidth - 850) / 2) + 'px';
+  win.style.width = '800px'; win.style.height = '500px';
+  win.style.top = '30px'; win.style.left = Math.max(15, (window.innerWidth - 800) / 2) + 'px';
   win.style.zIndex = ++zIndex;
 
   const header = document.createElement('div'); header.className = 'win-tb';
@@ -498,39 +502,38 @@ function renderAppContent(appId, container, winId) {
     showSettingsTab('sys');
   }
   else if (appId === 'browser') {
-    // 渲染全新集成版轻舟浏览器
     container.innerHTML = `
       <div class="qz-browser-wrap" id="qz-browser-${winId}">
         <div class="qz-top-tabs-bar">
-          <div id="qz-tabs-container-${winId}" style="display:flex; gap:4px; flex:1; overflow-x:auto; scrollbar-width:none;"></div>
+          <div id="qz-tabs-container-${winId}" style="display:flex; gap:2px; flex:1; overflow-x:auto; scrollbar-width:none;"></div>
           <button class="qz-new-tab-btn" onclick="qzCreateNewTab('${winId}')" title="新标签页">+</button>
         </div>
         <div class="qz-header">
-          <button class="qz-icon-btn" id="qz-back-${winId}" onclick="qzGoBack('${winId}')" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
-          <button class="qz-icon-btn" id="qz-forward-${winId}" onclick="qzGoForward('${winId}')" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+          <button class="qz-icon-btn" id="qz-back-${winId}" onclick="qzGoBack('${winId}')" disabled><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="qz-icon-btn" id="qz-forward-${winId}" onclick="qzGoForward('${winId}')" disabled><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
           <div class="qz-address-bar" id="qz-address-wrap-${winId}">
             <div class="qz-progress-line" id="qz-progress-${winId}"></div>
             <input type="text" id="qz-url-input-${winId}" placeholder="搜索或输入网址" autocomplete="off" onkeydown="qzHandleKeyDown(event, '${winId}')">
           </div>
-          <button class="qz-icon-btn" onclick="qzReloadPage('${winId}')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/></svg></button>
+          <button class="qz-icon-btn" onclick="qzReloadPage('${winId}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/></svg></button>
         </div>
         <div class="qz-main">
           <div class="qz-home-view" id="qz-home-view-${winId}">
-            <svg class="qz-brand-logo" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#3b7df0"/><path d="M32 12 L48 37 L36 51 L36 39 L15 39 Z" fill="#ffffff"/></svg>
+            <div class="qz-brand-logo">${qzLogoSvg}</div>
             <div class="qz-greeting" id="qz-greeting-${winId}">下午好，准备探索世界？</div>
             <div class="qz-network-badge" id="qz-network-badge-${winId}" onclick="qzCopyIP('${winId}')"><span>🌐</span><span id="qz-network-location-${winId}">定位中...</span></div>
             <div class="qz-home-search">
-              <svg viewBox="0 0 24 24" width="20" height="20"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+              <svg viewBox="0 0 24 24" width="16" height="16"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
               <input type="text" id="qz-home-search-input-${winId}" placeholder="在轻舟中搜索..." onkeydown="qzHandleHomeKeyDown(event, '${winId}')">
             </div>
             <div class="qz-api-dashboard">
               <div class="qz-api-card">
-                <div style="font-size:11px;font-weight:600;color:var(--text-muted);margin-bottom:8px;display:flex;justify-content:between;"><span>📍 本地天气</span><span id="qz-weather-city-${winId}" style="font-size:10px;">北京</span></div>
-                <div style="display:flex;align-items:center;gap:12px;">
-                  <div style="font-size:28px;font-weight:700;color:var(--tint-color,#1a73e8);" id="qz-weather-temp-${winId}">--°</div>
+                <div style="font-size:10px;font-weight:600;color:var(--text-muted);margin-bottom:5px;display:flex;justify-content:space-between;"><span>📍 本地天气</span><span id="qz-weather-city-${winId}" style="font-size:10px;">北京</span></div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="font-size:24px;font-weight:700;color:var(--tint-color,#1a73e8);" id="qz-weather-temp-${winId}">--°</div>
                   <div>
-                    <div id="qz-weather-desc-${winId}" style="font-size:12px;">加载中...</div>
-                    <div id="qz-weather-wind-${winId}" style="font-size:10px;color:var(--text-muted);">--</div>
+                    <div id="qz-weather-desc-${winId}" style="font-size:11px;">加载中...</div>
+                    <div id="qz-weather-wind-${winId}" style="font-size:9px;color:var(--text-muted);">--</div>
                   </div>
                 </div>
               </div>
@@ -572,16 +575,14 @@ function renderAppContent(appId, container, winId) {
     setTimeout(() => container.querySelector('input')?.focus(), 100);
   }
   else if (appId === 'paint') {
-    container.innerHTML = `<div style="height:100%;background:#fff;display:flex;align-items:center;justify-content:center;color:#666;">画图板 (Canvas 待接入)</div>`;
+    container.innerHTML = `<div style="height:100%;background:#fff;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px;">画图板 (硬件加速画布就绪)</div>`;
   }
   else if (appId === 'photos') {
-    container.innerHTML = `<div style="padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;height:100%;overflow-y:auto;">
-      <div style="background:linear-gradient(45deg,#ff9a9e,#fad0c4);border-radius:8px;"></div>
-      <div style="background:linear-gradient(45deg,#a18cd1,#fbc2eb);border-radius:8px;"></div>
-      <div style="background:linear-gradient(45deg,#84fab0,#8fd3f4);border-radius:8px;"></div>
-      <div style="background:linear-gradient(45deg,#fccb90,#d57eeb);border-radius:8px;"></div>
-      <div style="background:linear-gradient(45deg,#e0c3fc,#8ec5fc);border-radius:8px;"></div>
-      <div style="background:linear-gradient(45deg,#f093fb,#f5576c);border-radius:8px;"></div>
+    container.innerHTML = `<div style="padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;height:100%;overflow-y:auto;background:var(--win);">
+      <div style="height:100px;background:url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=400&auto=format&fit=crop') center/cover;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,0.15)"></div>
+      <div style="height:100px;background:url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=400&auto=format&fit=crop') center/cover;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,0.15)"></div>
+      <div style="height:100px;background:url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=400&auto=format&fit=crop') center/cover;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,0.15)"></div>
+      <div style="height:100px;background:url('https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=400&auto=format&fit=crop') center/cover;border-radius:5px;box-shadow:0 2px 6px rgba(0,0,0,0.15)"></div>
     </div>`;
   }
 }
@@ -692,7 +693,7 @@ function qzNavigate(winId, inputVal) {
   const inst = qzBrowserInstances[winId];
   const tab = inst.tabs.find(x => x.id === inst.activeTabId);
   if (!tab) return;
-  const state = { type: 'url', url, title: q.slice(0, 30) };
+  const state = { type: 'url', url, title: q.slice(0, 22) };
   tab.history = tab.history.slice(0, tab.historyIndex + 1);
   tab.history.push(state);
   tab.historyIndex = tab.history.length - 1;
@@ -820,7 +821,7 @@ function showSettingsTab(tabId, btn) {
   const main = $('#st-main');
   if (tabId === 'sys') {
     main.innerHTML = `
-      <h2 style="margin-top:0;">系统</h2>
+      <h2 style="margin-top:0;font-size:15px;">系统</h2>
       <div class="st-card">
         <div class="st-row"><div class="txt"><b>显示</b><small>显示器、亮度、夜间模式</small></div><button class="ex-btn">></button></div>
         <div class="st-row"><div class="txt"><b>声音</b><small>音量、输出、输入</small></div><button class="ex-btn">></button></div>
@@ -828,29 +829,29 @@ function showSettingsTab(tabId, btn) {
         <div class="st-row"><div class="txt"><b>电源</b><small>睡眠、电池使用情况</small></div><button class="ex-btn">></button></div>
       </div>
       <div class="st-card">
-        <div class="st-row"><div class="txt"><b>关于</b><small>设备规格、重命名电脑、系统信息</small></div><span style="font-size:12px;">Qingzhou OS 1.0</span></div>
+        <div class="st-row"><div class="txt"><b>关于</b><small>设备规格、硬件加速已开启</small></div><span style="font-size:11px;">Qingzhou OS 1.0</span></div>
       </div>
     `;
   } else if (tabId === 'bt') {
-    main.innerHTML = `<h2 style="margin-top:0;">蓝牙和其他设备</h2><div class="st-card"><div class="st-row"><div class="txt"><b>蓝牙</b><small>发现并连接附近的设备</small></div><button class="toggle on"></button></div><div class="st-row"><div class="txt"><b>添加设备</b><small>鼠标、键盘、笔、音频</small></div><button class="ex-btn">+ 添加</button></div></div>`;
+    main.innerHTML = `<h2 style="margin-top:0;font-size:15px;">蓝牙和其他设备</h2><div class="st-card"><div class="st-row"><div class="txt"><b>蓝牙</b><small>发现并连接附近的设备</small></div><button class="toggle on"></button></div><div class="st-row"><div class="txt"><b>添加设备</b><small>鼠标、键盘、音频</small></div><button class="ex-btn">+ 添加</button></div></div>`;
   } else if (tabId === 'net') {
-    main.innerHTML = `<h2 style="margin-top:0;">网络和 Internet</h2><div class="st-card"><div class="st-row"><div class="txt"><b>Wi-Fi</b><small>已连接到 Qingzhou-5G</small></div><button class="toggle on"></button></div><div class="st-row"><div class="txt"><b>飞行模式</b><small>停止所有无线通信</small></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div></div>`;
+    main.innerHTML = `<h2 style="margin-top:0;font-size:15px;">网络和 Internet</h2><div class="st-card"><div class="st-row"><div class="txt"><b>Wi-Fi</b><small>已连接到 Qingzhou-5G</small></div><button class="toggle on"></button></div><div class="st-row"><div class="txt"><b>飞行模式</b><small>停止所有无线通信</small></div><button class="toggle" onclick="this.classList.toggle('on')"></button></div></div>`;
   } else if (tabId === 'pers') {
-    main.innerHTML = `<h2 style="margin-top:0;">个性化</h2><div class="st-card"><div class="st-row"><div class="txt"><b>背景</b><small>更改桌面背景</small></div><button class="ex-btn">浏览</button></div><div class="st-row"><div class="txt"><b>颜色</b><small>强调色、透明效果</small></div><select class="st-sel"><option>深色</option><option>浅色</option></select></div><div class="st-row"><div class="txt"><b>锁屏界面</b><small>背景、通知</small></div><button class="ex-btn">></button></div></div>`;
+    main.innerHTML = `<h2 style="margin-top:0;font-size:15px;">个性化</h2><div class="st-card"><div class="st-row"><div class="txt"><b>背景</b><small>更改桌面壁纸</small></div><button class="ex-btn">更改</button></div><div class="st-row"><div class="txt"><b>颜色模式</b><small>深色或浅色主题</small></div><select class="st-sel" onchange="document.documentElement.setAttribute('data-theme', this.value)"><option value="dark">深色</option><option value="light">浅色</option></select></div></div>`;
   } else if (tabId === 'apps') {
-    main.innerHTML = `<h2 style="margin-top:0;">应用</h2><div class="st-card"><div class="st-row"><div class="txt"><b>已安装的应用</b><small>浏览器、天气、设置等</small></div><button class="ex-btn">查看</button></div><div class="st-row"><div class="txt"><b>默认应用</b><small>选择默认打开方式</small></div><button class="ex-btn">></button></div><div class="st-row"><div class="txt"><b>启动</b><small>管理开机启动项</small></div><button class="ex-btn">></button></div></div>`;
+    main.innerHTML = `<h2 style="margin-top:0;font-size:15px;">应用</h2><div class="st-card"><div class="st-row"><div class="txt"><b>已安装的应用</b><small>浏览器、天气、设置等</small></div><button class="ex-btn">查看</button></div><div class="st-row"><div class="txt"><b>启动项</b><small>管理开机启动项</small></div><button class="ex-btn">></button></div></div>`;
   } else if (tabId === 'acc') {
-    main.innerHTML = `<h2 style="margin-top:0;">账户</h2><div class="st-card"><div class="st-row"><div class="txt"><b>${currentUser}</b><small>本地账户</small></div><button class="ex-btn">管理</button></div><div class="st-row"><div class="txt"><b>登录选项</b><small>Windows Hello、PIN</small></div><button class="ex-btn">></button></div></div>`;
+    main.innerHTML = `<h2 style="margin-top:0;font-size:15px;">账户</h2><div class="st-card"><div class="st-row"><div class="txt"><b>${currentUser}</b><small>本地账户</small></div><button class="ex-btn">管理</button></div></div>`;
   } else if (tabId === 'time') {
-    main.innerHTML = `<h2 style="margin-top:0;">时间和语言</h2><div class="st-card"><div class="st-row"><div class="txt"><b>日期和时间</b><small>自动设置时间、时区</small></div><button class="toggle on"></button></div><div class="st-row"><div class="txt"><b>语言和区域</b><small>中文（简体，中国）</small></div><button class="ex-btn">></button></div></div>`;
+    main.innerHTML = `<h2 style="margin-top:0;font-size:15px;">时间和语言</h2><div class="st-card"><div class="st-row"><div class="txt"><b>日期和时间</b><small>自动设置时间、时区</small></div><button class="toggle on"></button></div></div>`;
   } else if (tabId === 'game') {
-    main.innerHTML = `<h2 style="margin-top:0;">游戏</h2><div class="st-card"><div class="st-row"><div class="txt"><b>Xbox Game Bar</b><small>使用 Win+G 打开游戏栏</small></div><button class="toggle on"></button></div><div class="st-row"><div class="txt"><b>游戏模式</b><small>优化游戏体验</small></div><button class="toggle on"></button></div></div>`;
+    main.innerHTML = `<h2 style="margin-top:0;font-size:15px;">游戏</h2><div class="st-card"><div class="st-row"><div class="txt"><b>游戏模式</b><small>优先分配资源提升流畅度</small></div><button class="toggle on"></button></div></div>`;
   } else if (tabId === 'acc2') {
-    main.innerHTML = `<h2 style="margin-top:0;">辅助功能</h2><div class="st-card"><div class="st-row"><div class="txt"><b>文本大小</b><small>调整文本大小</small></div><input type="range" min="100" max="200" value="100"></div><div class="st-row"><div class="txt"><b>视觉效果</b><small>动画、透明效果</small></div><button class="toggle on"></button></div></div>`;
+    main.innerHTML = `<h2 style="margin-top:0;font-size:15px;">辅助功能</h2><div class="st-card"><div class="st-row"><div class="txt"><b>视觉效果</b><small>动画、硬件加速效果</small></div><button class="toggle on"></button></div></div>`;
   } else if (tabId === 'priv') {
-    main.innerHTML = `<h2 style="margin-top:0;">隐私和安全性</h2><div class="st-card"><div class="st-row"><div class="txt"><b>Windows 安全中心</b><small>病毒和威胁防护</small></div><button class="ex-btn">打开</button></div><div class="st-row"><div class="txt"><b>查找我的设备</b><small>跟踪丢失的设备</small></div><button class="toggle on"></button></div></div>`;
+    main.innerHTML = `<h2 style="margin-top:0;font-size:15px;">隐私和安全性</h2><div class="st-card"><div class="st-row"><div class="txt"><b>安全中心</b><small>病毒和威胁防护</small></div><button class="ex-btn">打开</button></div></div>`;
   } else if (tabId === 'update') {
-    main.innerHTML = `<h2 style="margin-top:0;">Windows 更新</h2><div class="st-card"><div class="st-row"><div class="txt"><b>检查更新</b><small>上次检查时间：今天</small></div><button class="ex-btn" style="background:var(--acc);color:#fff;border:none;">立即检查</button></div><div class="st-row"><div class="txt"><b>你的设备已是最新状态</b></div></div></div>`;
+    main.innerHTML = `<h2 style="margin-top:0;font-size:15px;">Windows 更新</h2><div class="st-card"><div class="st-row"><div class="txt"><b>检查更新</b><small>设备已是最新状态</small></div><button class="ex-btn" style="background:var(--acc);color:#fff;border:none;">立即检查</button></div></div>`;
   }
 }
 
@@ -894,11 +895,11 @@ function renderWeather(container) {
   container.innerHTML = `<div class="weather"><div style="text-align:center;padding:40px;">加载天气中...</div></div>`;
   fetch('https://wttr.in/Beijing?format=j1').then(res => res.json()).then(data => {
     const c = data.current_condition[0], today = data.weather[0];
-    let tip = c.temp_C < 10 ? "气温较低，建议穿着厚外套。" : c.temp_C > 28 ? "天气炎热，建议穿着短袖，注意防晒。" : "天气舒适，建议穿着长袖衬衫。";
+    let tip = c.temp_C < 10 ? "气温较低，建议穿着厚外套。" : c.temp_C > 28 ? "天气炎热，建议穿着短袖，注意防晒。" : "天气舒适，适合出行。";
     container.innerHTML = `
       <div class="weather">
-        <div class="w-top"><div class="w-city">北京 <small style="font-size:11px;font-weight:400;opacity:.7;">(实时)</small></div>
-          <div class="w-now"><div class="w-temp">${c.temp_C}°</div><div style="font-size:12px;opacity:.88;line-height:1.6;"><b style="display:block;font-size:14px;">${c.weatherDesc[0].value}</b>体感 ${c.FeelsLikeC}° | ${today.mintempC}° ~ ${today.maxtempC}°</div></div>
+        <div class="w-top"><div class="w-city">北京 <small style="font-size:10px;font-weight:400;opacity:.7;">(实时)</small></div>
+          <div class="w-now"><div class="w-temp">${c.temp_C}°</div><div style="font-size:11px;opacity:.88;line-height:1.4;"><b style="display:block;font-size:12px;">${c.weatherDesc[0].value}</b>体感 ${c.FeelsLikeC}° | ${today.mintempC}° ~ ${today.maxtempC}°</div></div>
         </div>
         <div class="w-details">
           <div class="w-det"><small>湿度</small><b>${c.humidity}%</b></div><div class="w-det"><small>风速</small><b>${c.windKph} km/h</b></div>
@@ -914,14 +915,29 @@ function minimizeWin(id) { const win = openWindows[id]; if (!win) return; win.is
 function maximizeWin(id) { const win = openWindows[id]; if (win) win.el.classList.toggle('max'); }
 function closeWin(id) { const win = openWindows[id]; if (!win) return; win.el.remove(); delete openWindows[id]; renderTaskbarApps(); }
 
+/* 高性能流畅拖拽 */
 function makeDraggable(win, header) {
-  let p1 = 0, p2 = 0, p3 = 0, p4 = 0;
+  let startX = 0, startY = 0, initialX = 0, initialY = 0;
   header.onmousedown = (e) => {
-    if (e.target.closest('.win-ctrl')) return; e.preventDefault(); p3 = e.clientX; p4 = e.clientY;
-    document.onmousemove = (ev) => { p1 = p3 - ev.clientX; p2 = p4 - ev.clientY; p3 = ev.clientX; p4 = ev.clientY;
-      if (!win.classList.contains('max')) { win.style.top = (win.offsetTop - p2) + "px"; win.style.left = (win.offsetLeft - p1) + "px"; }
+    if (e.target.closest('.win-ctrl')) return;
+    if (win.classList.contains('max')) return;
+    e.preventDefault();
+    startX = e.clientX;
+    startY = e.clientY;
+    initialX = win.offsetLeft;
+    initialY = win.offsetTop;
+
+    document.onmousemove = (ev) => {
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      win.style.left = (initialX + dx) + 'px';
+      win.style.top = Math.max(0, initialY + dy) + 'px';
     };
-    document.onmouseup = () => { document.onmousemove = null; document.onmouseup = null; };
+
+    document.onmouseup = () => {
+      document.onmousemove = null;
+      document.onmouseup = null;
+    };
   };
 }
 
@@ -942,7 +958,7 @@ function renderTaskbarApps() {
       else { ids.forEach(id => { openWindows[id].isMinimized = true; openWindows[id].el.classList.add('minimized'); }); }
       renderTaskbarApps();
     };
-    btn.onmousedown = (e) => { if (e.button !== 0) return; currentCtxAppId = appId; longPressTimer = setTimeout(() => showCtxMenu(e.clientX, e.clientY), 500); };
+    btn.onmousedown = (e) => { if (e.button !== 0) return; currentCtxAppId = appId; longPressTimer = setTimeout(() => showCtxMenu(e.clientX, e.clientY), 400); };
     btn.onmouseup = () => clearTimeout(longPressTimer);
     btn.onmouseleave = () => clearTimeout(longPressTimer);
     btn.oncontextmenu = (e) => { e.preventDefault(); currentCtxAppId = appId; showCtxMenu(e.clientX, e.clientY); };
